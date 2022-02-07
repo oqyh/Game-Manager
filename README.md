@@ -1,5 +1,7 @@
 # Game_Manager (1.0.0)
 
+https://forums.alliedmods.net/showthread.php?t=336242
+
 ### Game Manager ( Hide radar, money, messages, ping, and more )
 
 ![alt text](https://github.com/oqyh/Game_Manager/blob/main/images/8.png?raw=true)
