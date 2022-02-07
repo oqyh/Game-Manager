@@ -1,8 +1,4 @@
 # Game_Manager (1.0.0)
 
-sadasd
-~dd
-```asdasdasdas```
-
-`sadasd`
-``asdadsada``
+Game Manager ( Hide radar, money, messages, ping, and more )
+![alt text](http://url/to/img.png)
