@@ -1,6 +1,6 @@
 # Game_Manager (1.0.0)
 
-## Game Manager ( Hide radar, money, messages, ping, and more )
+### Game Manager ( Hide radar, money, messages, ping, and more )
 
 ![alt text](https://github.com/oqyh/Game_Manager/blob/main/8.png?raw=true)
 
