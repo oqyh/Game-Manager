@@ -1,4 +1,4 @@
-# Game_Manager (1.0.0)
+# Game-Manager (1.0.0)
 
 https://forums.alliedmods.net/showthread.php?t=336242
 
