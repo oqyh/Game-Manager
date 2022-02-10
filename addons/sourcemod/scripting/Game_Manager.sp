@@ -156,34 +156,34 @@ public void OnPluginStart()
 		CvarEnables[i] = view_as<bool>(StringToInt(DefaultValue));
 	
 	
-	HookConVarChange((CvarHandles[0] = CreateConVar("sm_game_manager_enable"		  	 , DefaultValue, "Enable Plugin || 1= Yes || 2= No"						  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[1] = CreateConVar("sm_hide_radar"		     , DefaultValue, "Hide Radar || 1= Yes || 2= No"							  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[2] = CreateConVar("sm_hide_moneyhud"		     , DefaultValue, "Hide Money Hud || 1= Yes || 2= No"							  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[3] = CreateConVar("sm_hide_killfeed"		     , DefaultValue, "Hide Kill Feed || 1= Yes || 2= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[4] = CreateConVar("sm_block_radio_voice_agents"		     , DefaultValue, "Block All Radio Voice Agents || 1= Yes || 2= No"				  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[5] = CreateConVar("sm_block_radio_voice_grenades" , DefaultValue, "Block All Radio Voice Grenades Throw || 1= Yes || 2= No"				  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[6] = CreateConVar("sm_block_wheel"	 			 , DefaultValue, "Block All Wheel + Ping || 1= Yes || 2= No"	  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[7] = CreateConVar("sm_hide_all_radio_messages"		 , DefaultValue, "Hide All Radio Messages  || 1= Yes || 2= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[8] = CreateConVar("sm_block_cheats"			 , DefaultValue, "Make sv_cheats 0 Automatically   || 1= Yes || 2= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[0] = CreateConVar("sm_game_manager_enable"		  	 , DefaultValue, "Enable Plugin || 1= Yes || 0= No"						  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[1] = CreateConVar("sm_hide_radar"		     , DefaultValue, "Hide Radar || 1= Yes || 0= No"							  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[2] = CreateConVar("sm_hide_moneyhud"		     , DefaultValue, "Hide Money Hud || 1= Yes || 0= No"							  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[3] = CreateConVar("sm_hide_killfeed"		     , DefaultValue, "Hide Kill Feed || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[4] = CreateConVar("sm_block_radio_voice_agents"		     , DefaultValue, "Block All Radio Voice Agents || 1= Yes || 0= No"				  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[5] = CreateConVar("sm_block_radio_voice_grenades" , DefaultValue, "Block All Radio Voice Grenades Throw || 1= Yes || 0= No"				  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[6] = CreateConVar("sm_block_wheel"	 			 , DefaultValue, "Block All Wheel + Ping || 1= Yes || 0= No"	  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[7] = CreateConVar("sm_hide_all_radio_messages"		 , DefaultValue, "Hide All Radio Messages  || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[8] = CreateConVar("sm_block_cheats"			 , DefaultValue, "Make sv_cheats 0 Automatically   || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	
 	
-	HookConVarChange((CvarHandles[9]  = CreateConVar("sm_hide_connect_message"	 , DefaultValue, "Hide Connect Messages || 1= Yes || 2= No"	      , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[10] = CreateConVar("sm_hide_disconnect_message", DefaultValue, "Hide Disconnect Messages || 1= Yes || 2= No"	  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[11] = CreateConVar("sm_hide_jointeam_message"	 , DefaultValue, "Hide Join Team Messages || 1= Yes || 2= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[12] = CreateConVar("sm_hide_teamchange_message", DefaultValue, "Hide Team Change Messages || 1= Yes || 2= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[13] = CreateConVar("sm_hide_cvar_message" , DefaultValue, "Hide Cvar Change Messages || 1= Yes || 2= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[9]  = CreateConVar("sm_hide_connect_message"	 , DefaultValue, "Hide Connect Messages || 1= Yes || 0= No"	      , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[10] = CreateConVar("sm_hide_disconnect_message", DefaultValue, "Hide Disconnect Messages || 1= Yes || 0= No"	  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[11] = CreateConVar("sm_hide_jointeam_message"	 , DefaultValue, "Hide Join Team Messages || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[12] = CreateConVar("sm_hide_teamchange_message", DefaultValue, "Hide Team Change Messages || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[13] = CreateConVar("sm_hide_cvar_message" , DefaultValue, "Hide Cvar Change Messages || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	
-	HookConVarChange((CvarHandles[14] = CreateConVar("sm_hide_hidemoney_message" , DefaultValue, "Hide All Money Team/Player Award Messages || 1= Yes || 2= No", _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[14] = CreateConVar("sm_hide_hidemoney_message" , DefaultValue, "Hide All Money Team/Player Award Messages || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
 	
-	HookConVarChange((CvarHandles[15] = CreateConVar("sm_hide_savedby_message" , DefaultValue, "Hide Player Saved You By Player Messages || 1= Yes || 2= No", _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[15] = CreateConVar("sm_hide_savedby_message" , DefaultValue, "Hide Player Saved You By Player Messages || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
 	
-	HookConVarChange((CvarHandles[16] = CreateConVar("sm_hide_teammateattack_message" , DefaultValue, "Hide Team Mate Attack Messages || 1= Yes || 2= No", _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[16] = CreateConVar("sm_hide_teammateattack_message" , DefaultValue, "Hide Team Mate Attack Messages || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
 
-	HookConVarChange((CvarHandles[17] = CreateConVar("sm_forceendmap" , DefaultValue, "Force End Map With Command (mp_timelimit) || 1= Yes || 2= No", _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[17] = CreateConVar("sm_forceendmap" , DefaultValue, "Force End Map With Command (mp_timelimit) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
 
-	HookConVarChange((CvarHandles[18] = CreateConVar("sm_no_chicken" , DefaultValue, "No Chicken || 1= Yes || 2= No ", _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[18] = CreateConVar("sm_no_chicken" , DefaultValue, "No Chicken || 1= Yes || 0= No ", _, true, 0.0, true, 1.0)), ConVarChanged);
 
-	HookConVarChange((CvarHandles[19] = CreateConVar("sm_show_timeleft_hud" , DefaultValue, "Show Timeleft HUD (mp_timelimit) At Bottom  || 1= Yes || 2= No", _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[19] = CreateConVar("sm_show_timeleft_hud" , DefaultValue, "Show Timeleft HUD (mp_timelimit) At Bottom  || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
 
 	
 	LoadCfg();
