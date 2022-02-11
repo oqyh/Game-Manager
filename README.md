@@ -19,7 +19,7 @@ https://forums.alliedmods.net/showthread.php?t=336242
 ![alt text](https://github.com/oqyh/Game_Manager/blob/main/images/9.png?raw=true)
 
 
-  ConVars:
+.:[ ConVars ]:.
   ```
  // Enable Plugin || 1= Yes || 0= No
 sm_game_manager_enable "1"
@@ -99,4 +99,10 @@ sm_forceendmap "0"
 
 // Show Timeleft HUD (mp_timelimit) At Bottom  || 1= Yes || 0= No
 sm_show_timeleft_hud "0"
+```
+
+
+:[ Change Log ]:.
+```
+- Initial Release (1.0.0)
 ```
