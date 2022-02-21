@@ -2,7 +2,7 @@
 
 https://forums.alliedmods.net/showthread.php?t=336242
 
-### Game Manager ( Hide radar, money, messages, ping, Map Rotaion With Maplist, Restart Server Last Player Dissconnect, and More )
+### Game Manager ( Hide radar, money, messages, ping, Map Rotaion With Maplist, Restart Server Last Player Disconnect, and More )
 
 ![alt text](https://github.com/oqyh/Game_Manager/blob/main/images/8.png?raw=true)
 
