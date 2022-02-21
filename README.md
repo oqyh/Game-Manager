@@ -26,10 +26,6 @@ https://forums.alliedmods.net/showthread.php?t=336242
 sm_enable_hide_and_block "1"
 
 // Block All Radio Voice Agents (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No
-// -
-// Default: "0"
-// Minimum: "0.000000"
-// Maximum: "1.000000"
 sm_block_radio_voice_agents "0"
 
 // Block All Radio Voice Grenades Throw (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No
