@@ -239,40 +239,28 @@ public void OnPluginStart()
 	HookConVarChange((CvarHandles[6] = CreateConVar("sm_block_wheel"	 			 , DefaultValue, "Block All Wheel + Ping (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"	  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[7] = CreateConVar("sm_block_all_radio_messages"		 , DefaultValue, "Hide All Radio Messages  (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[8] = CreateConVar("sm_block_cheats"			 , DefaultValue, "Make sv_cheats 0 Automatically   (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	
-	
 	HookConVarChange((CvarHandles[9]  = CreateConVar("sm_block_connect_message"	 , DefaultValue, "Hide Connect Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"	      , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[10] = CreateConVar("sm_block_disconnect_message", DefaultValue, "Hide Disconnect Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"	  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[11] = CreateConVar("sm_block_jointeam_message"	 , DefaultValue, "Hide Join Team Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[12] = CreateConVar("sm_block_teamchange_message", DefaultValue, "Hide Team Change Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[13] = CreateConVar("sm_block_cvar_message" , DefaultValue, "Hide Cvar Change Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	
 	HookConVarChange((CvarHandles[14] = CreateConVar("sm_block_hidemoney_message" , DefaultValue, "Hide All Money Team/Player Award Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-	
 	HookConVarChange((CvarHandles[15] = CreateConVar("sm_block_savedby_message" , DefaultValue, "Hide Player Saved You By Player Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-	
 	HookConVarChange((CvarHandles[16] = CreateConVar("sm_block_teammateattack_message" , DefaultValue, "Hide Team Mate Attack Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-
 	HookConVarChange((CvarHandles[17] = CreateConVar("sm_forceendmap" , DefaultValue, "Force End Map With Command mp_timelimit (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-
 	HookConVarChange((CvarHandles[18] = CreateConVar("sm_block_chicken" , DefaultValue, "Remove Chickens (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-
 	HookConVarChange((CvarHandles[19] = CreateConVar("sm_show_timeleft_hud" , DefaultValue, "Show Timeleft HUD (mp_timelimit) At Bottom  (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-
-
-	int iArraySize = ByteCountToCells(64);
-	g_aMapList = new ArrayList(iArraySize);
-
-	c_cSmNextmap = FindConVar("sm_nextmap");
-	g_cSv_hibernate_when_empty = FindConVar("sv_hibernate_when_empty"); SetConVarInt(g_cSv_hibernate_when_empty, 0);
-
 	g_cPluginEnabled = CreateConVar("sm_enable_rotation", "0", ".::[Map Rotation Feature]::.  || 1= Yes || 0= No");
 	g_cPluginTime = CreateConVar("sm_rotation_timelimit", "20", "Time (in minutes) To Start Rotation When sm_rotation_player_quota Not Reach The Players Needed (Need To Enable sm_enable_rotation)");
 	g_cPluginQuota = CreateConVar("sm_rotation_player_quota", "1", "Number Of Players Needed To Cancel sm_rotation_timelimit Changing The Map (Need To Enable sm_enable_rotation)");
 	g_cPluginManaged = CreateConVar("sm_rotation_maplist_enabled", "1", " Make Rotation Specific File Maplist (Need To Enable sm_enable_rotation) || 1= Yes || 0= No");
 	g_cPluginMaps = CreateConVar("sm_rotation_maplist", "addons/sourcemod/configs/game_manager_maps.txt", "Location Maplist File (Need To Enable sm_enable_rotation)");
 	g_cPluginMapsOrder = CreateConVar("sm_rotation_maplist_order", "1", "How Would You Like It The Map Order (Need To Enable sm_enable_rotation) || 1= Random || 0= Linear");
-
+	g_Cvar_BotQuota = CreateConVar("sm_block_bots", "0", "Permanently Remove bots (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No");
+	( g_ConVarEnable 	= CreateConVar("sm_restart_empty_enable", 					"0", 	".::[Restart Server When Last Player Disconnect Feature]::. || 1= Yes || 0= No ", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
+	( g_ConVarMethod 	= CreateConVar("sm_restart_empty_method", 					"2", 	"When server is empty Which Method Do You Like (Need To Enable sm_restart_empty_enable) || 1= Restart || 2= Crash If Method 1 Is Not work", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
+	( g_ConVarDelay 	= CreateConVar("sm_restart_empty_delay", 					"60.0", 	"(in sec.) To Wait To Start sm_restart_empty_method (Need To Enable sm_restart_empty_enable)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
+	
 	HookConVarChange(g_cPluginEnabled, OnCvarChange);
 	HookConVarChange(g_cPluginTime, OnCvarChange);
 	HookConVarChange(g_cPluginQuota, OnCvarChange);
@@ -284,7 +272,7 @@ public void OnPluginStart()
 	g_enable = GetConVarBool(CvarHandles[0]);
 	HookConVarChange(CvarHandles[0], CvarChanged);
 
-	g_Cvar_BotQuota = CreateConVar("sm_block_bots", "0", "Permanently Remove bots (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No");
+
 	g_botQuota = GetConVarInt(g_Cvar_BotQuota);
 	HookConVarChange(g_Cvar_BotQuota, CvarChanged);
 	
@@ -293,11 +281,12 @@ public void OnPluginStart()
 		HookEvent("player_team", Event_PlayerTeam);
 		g_hookenabled = true;
 	}
-	
-	
-	( g_ConVarEnable 	= CreateConVar("sm_restart_empty_enable", 					"0", 	".::[Restart Server When Last Player Disconnect Feature]::. || 1= Yes || 0= No ", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
-	( g_ConVarMethod 	= CreateConVar("sm_restart_empty_method", 					"2", 	"When server is empty Which Method Do You Like (Need To Enable sm_restart_empty_enable) || 1= Restart || 2= Crash If Method 1 Is Not work", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
-	( g_ConVarDelay 	= CreateConVar("sm_restart_empty_delay", 					"60.0", 	"(in sec.) To Wait To Start sm_restart_empty_method (Need To Enable sm_restart_empty_enable)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
+
+	int iArraySize = ByteCountToCells(64);
+	g_aMapList = new ArrayList(iArraySize);
+
+	c_cSmNextmap = FindConVar("sm_nextmap");
+	g_cSv_hibernate_when_empty = FindConVar("sv_hibernate_when_empty"); SetConVarInt(g_cSv_hibernate_when_empty, 0);
 	
 	g_ConVarHibernate = FindConVar("sv_hibernate_when_empty");
 	
