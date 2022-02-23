@@ -24,6 +24,9 @@ https://forums.alliedmods.net/showthread.php?t=336242
 // .::[Enable Hide And Block Feature]::. || 1= Yes || 0= No
 sm_enable_hide_and_block "1"
 
+// Auto Balance Every Round (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No
+sm_auto_balance_every_round "0"
+
 // Block All Radio Voice Agents (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No
 sm_block_radio_voice_agents "0"
 
@@ -122,6 +125,7 @@ sm_restart_empty_method "2"
 - Fix Radar When its Hidden It Shows To Spectators
 - Added "sorry" Radio Missing
 - Added Permanently Remove bots 
+- Added Force Auto Balance Team Every Round
 - Added Map Rotation With Maplist Feature ( Thanks Teki, tabakhase , Stewart Anubis )
 - Added Restart Server When Last Player Disconnect Feature ( Thanks Dragokas )
 
