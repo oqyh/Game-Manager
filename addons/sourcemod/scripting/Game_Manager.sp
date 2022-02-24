@@ -5,13 +5,13 @@
 #define PluginDesc "Game Manager ( Hide radar, money, messages, ping, and more )"
 
 #define PluginAuthor "Gold_KingZ + MrQout"
-#define PluginVersion "1.0.1"
+#define PluginVersion "1.0.2"
 
 #define PluginSite "https://steamcommunity.com/id/oQYh"
 
 #define CFG_NAME "Game_Manager"
 
-#define DefaultValue "0"
+#define DefaultValue "1"
 #define CVAR_FLAGS			FCVAR_NOTIFY
 #define TEAM_NONE 0
 #define TEAM_SPEC 1
@@ -25,6 +25,72 @@
 #include <sdkhooks>
 #include <sdktools_functions>
 
+
+Handle g_cPluginEnabled = INVALID_HANDLE;
+Handle g_cPluginTime = INVALID_HANDLE;
+Handle g_cPluginQuota = INVALID_HANDLE;
+Handle g_cPluginManaged = INVALID_HANDLE;
+Handle g_cPluginMaps = INVALID_HANDLE;
+Handle g_cPluginMapsOrder = INVALID_HANDLE;
+Handle c_cSmNextmap = INVALID_HANDLE;
+Handle g_cSv_hibernate_when_empty = INVALID_HANDLE;
+Handle h_bEnable;
+Handle g_hTimerGameEnd = INVALID_HANDLE;
+Handle hPluginMe;
+
+ConVar g_cEnableBloodSplatter = null;
+ConVar g_cEnableBloodSplash = null;
+ConVar g_cEnableNoBlood = null;
+ConVar g_ConVarEnable;
+ConVar g_ConVarMethod;
+ConVar g_ConVarDelay;
+ConVar g_ConVarHibernate;
+
+bool g_bPluginEnabled;
+bool g_bPluginManaged;
+bool g_bPluginMapsOrder;
+bool g_bCvarEnabled;
+bool g_bStartRandomMap;
+bool g_bServerStarted;
+
+int g_iPluginTime;
+int g_iPluginQuota;
+int g_iMapListIndex = 0;
+int g_iCvarMethod;
+int g_iHybernateInitial;
+
+char g_sPluginMaps[PLATFORM_MAX_PATH];
+char g_sMapListPath[PLATFORM_MAX_PATH];
+char g_sLogPath[PLATFORM_MAX_PATH];
+char CfgFile[PLATFORM_MAX_PATH];
+
+ArrayList g_aMapList;
+float g_fCvarDelay;
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	hPluginMe = myself;
+	if( late )
+	{
+		g_bServerStarted = true;
+	}
+	return APLRes_Success;
+}
+
+new Handle: g_Cvar_BotDelayEnable = INVALID_HANDLE;
+new Handle:g_Cvar_BotQuota = INVALID_HANDLE;
+new Handle:g_Cvar_BotDelay;
+new Handle:bot_delay_timer = INVALID_HANDLE;
+new bool:g_delayenable = false;
+new bool:g_enable = false;
+new g_Tcount = 0;
+new g_CTcount = 0;
+new g_BotTcount = 0;
+new g_BotCTcount = 0;
+new g_botQuota = 0;
+new g_botDelay = 1;
+new bool:g_hookenabled = false;
+
 public Plugin myinfo = 
 {
     name 		= PluginName,
@@ -35,7 +101,7 @@ public Plugin myinfo =
 };
 
 
-char CfgFile[PLATFORM_MAX_PATH];
+
 
 
 Handle
@@ -47,13 +113,13 @@ Handle
 
 Handle CvarHandles[] =
 {
-	null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null
+	null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null
 };
 
 
 bool CvarEnables[] =
 {
-	false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
+	false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
 };
 
 
@@ -146,74 +212,6 @@ char TeamWarningArray[][] =
 	"#Hint_try_not_to_injure_teammates",
 };
 
-Handle g_cPluginEnabled = INVALID_HANDLE;
-Handle g_cPluginTime = INVALID_HANDLE;
-Handle g_cPluginQuota = INVALID_HANDLE;
-Handle g_cPluginManaged = INVALID_HANDLE;
-Handle g_cPluginMaps = INVALID_HANDLE;
-Handle g_cPluginMapsOrder = INVALID_HANDLE;
-Handle c_cSmNextmap = INVALID_HANDLE;
-Handle g_cSv_hibernate_when_empty = INVALID_HANDLE;
-
-bool g_bPluginEnabled;
-int g_iPluginTime;
-int g_iPluginQuota;
-bool g_bPluginManaged;
-char g_sPluginMaps[PLATFORM_MAX_PATH];
-bool g_bPluginMapsOrder;
-
-Handle g_hTimerGameEnd = INVALID_HANDLE;
-int g_iMapListIndex = 0;
-
-ArrayList g_aMapList;
-
-
-ConVar g_ConVarEnable;
-ConVar g_ConVarMethod;
-ConVar g_ConVarDelay;
-ConVar g_ConVarHibernate;
-
-bool g_bCvarEnabled;
-bool g_bStartRandomMap;
-bool g_bServerStarted;
-int g_iCvarMethod;
-int g_iHybernateInitial;
-float g_fCvarDelay;
-
-char g_sMapListPath[PLATFORM_MAX_PATH];
-char g_sLogPath[PLATFORM_MAX_PATH];
-Handle hPluginMe;
-
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
-{
-	hPluginMe = myself;
-	if( late )
-	{
-		g_bServerStarted = true;
-	}
-	return APLRes_Success;
-}
-
-new bool:g_enable = false;
-
-new Handle: g_Cvar_BotDelayEnable = INVALID_HANDLE;
-new bool:g_delayenable = false;
-
-new g_Tcount = 0;
-new g_CTcount = 0;
-new g_BotTcount = 0;
-new g_BotCTcount = 0;
-
-new Handle:g_Cvar_BotQuota = INVALID_HANDLE;
-new g_botQuota = 0;
-
-new Handle:g_Cvar_BotDelay;
-new g_botDelay = 1;
-
-new bool:g_hookenabled = false;
-
-new Handle:bot_delay_timer = INVALID_HANDLE;
-
 public void OnPluginStart() 
 {
 	CreateTimer(1.0, Timeleft, _, TIMER_REPEAT);
@@ -231,43 +229,32 @@ public void OnPluginStart()
 		CvarEnables[i] = view_as<bool>(StringToInt(DefaultValue));
 	
 	
-	HookConVarChange((CvarHandles[0] = CreateConVar("sm_enable_hide_and_block"		  	 , "1", ".::[Enable Hide And Block Feature]::. || 1= Yes || 0= No"						  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[0] = CreateConVar("sm_enable_hide_and_block"		  	 , DefaultValue, ".::[Enable Hide And Block Feature]::. || 1= Yes || 0= No"						  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[1] = CreateConVar("sm_hide_radar"		     , DefaultValue, "Hide Radar (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"							  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[2] = CreateConVar("sm_hide_moneyhud"		     , DefaultValue, "Hide Money Hud (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"							  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[3] = CreateConVar("sm_hide_killfeed"		     , DefaultValue, "Hide Kill Feed (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[4] = CreateConVar("sm_block_radio_voice_agents"		     , DefaultValue, "Block All Radio Voice Agents (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"				  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[5] = CreateConVar("sm_block_radio_voice_grenades" , DefaultValue, "Block All Radio Voice Grenades Throw (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"				  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[6] = CreateConVar("sm_block_wheel"	 			 , DefaultValue, "Block All Wheel + Ping (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"	  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[7] = CreateConVar("sm_block_all_radio_messages"		 , DefaultValue, "Hide All Radio Messages  (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[7] = CreateConVar("sm_block_all_radio_messages "		 , DefaultValue, "Hide All Radio Messages  (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[8] = CreateConVar("sm_block_cheats"			 , DefaultValue, "Make sv_cheats 0 Automatically   (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	
-	
 	HookConVarChange((CvarHandles[9]  = CreateConVar("sm_block_connect_message"	 , DefaultValue, "Hide Connect Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"	      , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[10] = CreateConVar("sm_block_disconnect_message", DefaultValue, "Hide Disconnect Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"	  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[11] = CreateConVar("sm_block_jointeam_message"	 , DefaultValue, "Hide Join Team Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[12] = CreateConVar("sm_block_teamchange_message", DefaultValue, "Hide Team Change Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[13] = CreateConVar("sm_block_cvar_message" , DefaultValue, "Hide Cvar Change Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	
 	HookConVarChange((CvarHandles[14] = CreateConVar("sm_block_hidemoney_message" , DefaultValue, "Hide All Money Team/Player Award Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-	
 	HookConVarChange((CvarHandles[15] = CreateConVar("sm_block_savedby_message" , DefaultValue, "Hide Player Saved You By Player Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-	
 	HookConVarChange((CvarHandles[16] = CreateConVar("sm_block_teammateattack_message" , DefaultValue, "Hide Team Mate Attack Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-
 	HookConVarChange((CvarHandles[17] = CreateConVar("sm_forceendmap" , DefaultValue, "Force End Map With Command mp_timelimit (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-
 	HookConVarChange((CvarHandles[18] = CreateConVar("sm_block_chicken" , DefaultValue, "Remove Chickens (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-
 	HookConVarChange((CvarHandles[19] = CreateConVar("sm_show_timeleft_hud" , DefaultValue, "Show Timeleft HUD (mp_timelimit) At Bottom  (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-
-	HookConVarChange((CvarHandles[20] = CreateConVar("sm_auto_balance_every_round" , DefaultValue, "Auto Balance Every Round (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-
-	int iArraySize = ByteCountToCells(64);
-	g_aMapList = new ArrayList(iArraySize);
-
-	c_cSmNextmap = FindConVar("sm_nextmap");
-	g_cSv_hibernate_when_empty = FindConVar("sv_hibernate_when_empty"); SetConVarInt(g_cSv_hibernate_when_empty, 0);
-
+	h_bEnable = CreateConVar("sm_auto_balance_every_round", "1", "Auto Balance Every Round (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_Cvar_BotQuota = CreateConVar("sm_block_bots", "0", "Permanently Remove bots (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No");
+	g_cEnableNoBlood = CreateConVar("sm_hide_blood", "0", "Hide blood (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_cEnableBloodSplatter = CreateConVar("sm_hide_blood_splatter", "0", "Hide Blood Splatter (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_cEnableBloodSplash = CreateConVar("sm_hide_blood_splash", "0", "Hide Blood Splash (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	
 	g_cPluginEnabled = CreateConVar("sm_enable_rotation", "0", ".::[Map Rotation Feature]::.  || 1= Yes || 0= No");
 	g_cPluginTime = CreateConVar("sm_rotation_timelimit", "20", "Time (in minutes) To Start Rotation When sm_rotation_player_quota Not Reach The Players Needed (Need To Enable sm_enable_rotation)");
 	g_cPluginQuota = CreateConVar("sm_rotation_player_quota", "1", "Number Of Players Needed To Cancel sm_rotation_timelimit Changing The Map (Need To Enable sm_enable_rotation)");
@@ -275,32 +262,27 @@ public void OnPluginStart()
 	g_cPluginMaps = CreateConVar("sm_rotation_maplist", "addons/sourcemod/configs/game_manager_maps.txt", "Location Maplist File (Need To Enable sm_enable_rotation)");
 	g_cPluginMapsOrder = CreateConVar("sm_rotation_maplist_order", "1", "How Would You Like It The Map Order (Need To Enable sm_enable_rotation) || 1= Random || 0= Linear");
 	
-	
-	HookConVarChange(g_cPluginEnabled, OnCvarChange);
-	HookConVarChange(g_cPluginTime, OnCvarChange);
-	HookConVarChange(g_cPluginQuota, OnCvarChange);
-	HookConVarChange(g_cPluginManaged, OnCvarChange);
-	HookConVarChange(g_cPluginMaps, OnCvarChange);
-	HookConVarChange(g_cPluginMapsOrder, OnCvarChange);
-	HookConVarChange(g_cSv_hibernate_when_empty, OnCvarChange);
-	
-	g_enable = GetConVarBool(CvarHandles[0]);
-	HookConVarChange(CvarHandles[0], CvarChanged);
-
-	g_Cvar_BotQuota = CreateConVar("sm_block_bots", "0", "Permanently Remove bots (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No");
-	g_botQuota = GetConVarInt(g_Cvar_BotQuota);
-	HookConVarChange(g_Cvar_BotQuota, CvarChanged);
-	
-
-	if (!g_delayenable && g_hookenabled == false) {
-		HookEvent("player_team", Event_PlayerTeam);
-		g_hookenabled = true;
-	}
-	
-	
 	( g_ConVarEnable 	= CreateConVar("sm_restart_empty_enable", 					"0", 	".::[Restart Server When Last Player Disconnect Feature]::. || 1= Yes || 0= No ", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
 	( g_ConVarMethod 	= CreateConVar("sm_restart_empty_method", 					"2", 	"When server is empty Which Method Do You Like (Need To Enable sm_restart_empty_enable) || 1= Restart || 2= Crash If Method 1 Is Not work", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
 	( g_ConVarDelay 	= CreateConVar("sm_restart_empty_delay", 					"60.0", 	"(in sec.) To Wait To Start sm_restart_empty_method (Need To Enable sm_restart_empty_enable)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
+	
+	int iArraySize = ByteCountToCells(64);
+	g_aMapList = new ArrayList(iArraySize);
+
+	c_cSmNextmap = FindConVar("sm_nextmap");
+	g_cSv_hibernate_when_empty = FindConVar("sv_hibernate_when_empty"); SetConVarInt(g_cSv_hibernate_when_empty, 0);
+	
+	g_enable = GetConVarBool(CvarHandles[0]);
+	HookConVarChange(CvarHandles[0], CvarChanged);
+	
+	
+	g_botQuota = GetConVarInt(g_Cvar_BotQuota);
+	HookConVarChange(g_Cvar_BotQuota, CvarChanged);
+	
+	if (!g_delayenable && g_hookenabled == false) {
+	HookEvent("player_team", Event_PlayerTeam);
+	g_hookenabled = true;
+	}
 	
 	g_ConVarHibernate = FindConVar("sv_hibernate_when_empty");
 	
@@ -313,7 +295,7 @@ public void OnPluginStart()
 	LoadCfg();
 	
 	
-	
+
 	
 	HRadar 	   = FindConVar("sv_disable_radar");
 	MoneyHud   = FindConVar("mp_maxmoney");
@@ -323,18 +305,25 @@ public void OnPluginStart()
 	
 	HookEvent("server_cvar", OnServerCvar  , EventHookMode_Pre);
 	
+	
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
 	
-	
+	AddTempEntHook("EffectDispatch", TE_OnEffectDispatch);
+	AddTempEntHook("World Decal", TE_OnWorldDecal);
 	HookEvent("player_spawn", OnPlayerSpawn);
 	HookEvent("player_blind", OnPlayerBlind);
-	HookEvent("round_prestart", Event_PreRoundStart); 
-	HookEvent("round_end", Event_PreRoundStart); 
-	 
+	HookEvent("round_prestart", Event_PreRoundStart);
+	HookEvent("round_end", Event_PreRoundStart);
 	HookEvent("player_team",  		OnPlayerTeam, 		EventHookMode_Pre);
 	HookEvent("player_connect", 	OnPlayerConnect, 	EventHookMode_Pre);
 	HookEvent("player_disconnect", 	OnPlayerDisconnect, EventHookMode_Pre);
-	
+	HookConVarChange(g_cPluginEnabled, OnCvarChange);
+	HookConVarChange(g_cPluginTime, OnCvarChange);
+	HookConVarChange(g_cPluginQuota, OnCvarChange);
+	HookConVarChange(g_cPluginManaged, OnCvarChange);
+	HookConVarChange(g_cPluginMaps, OnCvarChange);
+	HookConVarChange(g_cPluginMapsOrder, OnCvarChange);
+	HookConVarChange(g_cSv_hibernate_when_empty, OnCvarChange);
 	
 	
 	
@@ -396,12 +385,382 @@ public void OnPluginEnd()
 	g_aMapList.Clear();
 }
 
+public int ConVarChanged(Handle cvar, char[] oldValue, char[] newValue)
+{
+	for (int i = 0; i < sizeof(CvarHandles); i++)
+		if (cvar == CvarHandles[i])SetConVarInt(CvarHandles[i], (CvarEnables[i] = GetConVarBool(cvar)));
+}
+
+public Action OnHookTextMsg(UserMsg msg_id, Handle bf, int[] players, int playersNum, bool reliable, bool init)
+{
+	if (!CvarEnables[0] || !CvarEnables[14])return Plugin_Continue;
+
+	char sBuffer[64];
+	PbReadString(bf, "params", sBuffer, sizeof(sBuffer), 0);
+	
+	for (int i = 0; i < sizeof(MoneyMessageArray); i++)
+	{
+		if (!strcmp(sBuffer, MoneyMessageArray[i], false))return Plugin_Handled;
+	}
+	
+	return Plugin_Continue;
+}
+
+public Action OnHookTextMsg2(UserMsg msg_id, Handle bf, int[] players, int playersNum, bool reliable, bool init)
+{
+	if (!CvarEnables[0] || !CvarEnables[15])return Plugin_Continue;
+
+	char sBuffer[64];
+	PbReadString(bf, "params", sBuffer, sizeof(sBuffer), 0);
+	
+	for (int i = 0; i < sizeof(SavedbyArray); i++)
+	{
+		if (!strcmp(sBuffer, SavedbyArray[i], false))return Plugin_Handled;
+	}
+	
+	return Plugin_Continue;
+}
+
+public Action OnHookTextMsg3(UserMsg msg_id, Handle bf, int[] players, int playersNum, bool reliable, bool init)
+{
+	if (!CvarEnables[0] || !CvarEnables[16])return Plugin_Continue;
+
+	char sBuffer[64];
+	PbReadString(bf, "params", sBuffer, sizeof(sBuffer), 0);
+	
+	for (int i = 0; i < sizeof(TeamWarningArray); i++)
+	{
+		if (!strcmp(sBuffer, TeamWarningArray[i], false))return Plugin_Handled;
+	}
+	
+	return Plugin_Continue;
+}
+
+public void OnMapStart()
+{
+	if (g_delayenable && g_hookenabled == false) {
+		g_botDelay = GetConVarInt(g_Cvar_BotDelay);
+		bot_delay_timer = CreateTimer(g_botDelay * 1.0, Timer_BotDelay);
+	}
+	
+	g_hTimerGameEnd = INVALID_HANDLE;
+	if (g_bPluginEnabled)
+	{
+		CheckPlayerQuota();
+	}
+	
+	CreateTimer(1.0, CheckRemainingTime, INVALID_HANDLE, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action CheckRemainingTime(Handle timer)
+{
+	if (!CvarEnables[0] || !CvarEnables[17])return Plugin_Continue;
+	Handle hTmp;	
+	hTmp = FindConVar("mp_timelimit");
+	int iTimeLimit = GetConVarInt(hTmp);			
+	if (hTmp != INVALID_HANDLE)
+		CloseHandle(hTmp);	
+	if (iTimeLimit > 0)
+	{
+		int timeleft;
+		GetMapTimeLeft(timeleft);
+		
+		switch(timeleft)
+		{
+			case 1800: 	CPrintToChatAll("{lightred}Timeleft: 30 minutes");
+			case 1200: 	CPrintToChatAll("{lightred}Timeleft: 20 minutes");
+			case 600: 	CPrintToChatAll("{lightred}Timeleft: 10 minutes");
+			case 300: 	CPrintToChatAll("{lightred}Timeleft: 5 minutes");
+			case 120: 	CPrintToChatAll("{lightred}Timeleft: 2 minutes");
+			case 60: 	CPrintToChatAll("{lightred}Timeleft: 60 seconds");
+			case 30: 	CPrintToChatAll("{lightred}Timeleft: 30 seconds");
+			case 15: 	CPrintToChatAll("{lightred}Timeleft: 15 seconds");
+			case -1: 	CPrintToChatAll("{lightred}Timeleft: 3..");
+			case -2: 	CPrintToChatAll("{lightred}Timeleft: 2..");
+			case -3: 	CPrintToChatAll("{lightred}Timeleft: 1..");
+		}
+		
+		if(timeleft < -3)
+			CS_TerminateRound(0.0, CSRoundEnd_Draw, true);
+	}
+	
+	return Plugin_Continue;
+}
+
+public Action CS_OnTerminateRound(float &fDelay, CSRoundEndReason &iReason)
+{
+	if (!CvarEnables[0] || !CvarEnables[17])return Plugin_Continue;
+	return Plugin_Continue;
+}
+
+public void OnEntityCreated(int entity, const char[] classname)
+{
+	if (classname[0] == 'c')
+	{
+		if (StrEqual(classname, "chicken", true))
+		{
+			SDKHook(entity, SDKHook_Spawn, SDK_OnChickenSpawn);
+		}
+	}
+	else if (classname[0] == 'i')
+	{
+		if (StrEqual(classname, "info_map_parameters", true))
+		{
+			SDKHook(entity, SDKHook_Spawn, SDK_OnMapParametersSpawn);
+		}
+	}
+}
+
+public Action SDK_OnChickenSpawn(int entity)
+{
+	if (!CvarEnables[0] || !CvarEnables[18])return Plugin_Continue;
+	if (!IsValidEntity(entity))
+	{
+		return Plugin_Continue;
+	}
+	
+	RequestFrame(Frame_RemoveEntity, EntIndexToEntRef(entity));
+	return Plugin_Continue;
+}
+
+public Action SDK_OnMapParametersSpawn(int entity)
+{
+	if (!CvarEnables[0] || !CvarEnables[18])return Plugin_Continue;
+	if (!IsValidEntity(entity))
+	{
+		return Plugin_Continue;
+	}
+	
+	SetEntProp(entity, Prop_Data, "m_iPetPopulation", 0);
+	return Plugin_Continue;
+}
+
+public void Frame_RemoveEntity(int reference)
+{
+	int entity = EntRefToEntIndex(reference);
+	if (entity == INVALID_ENT_REFERENCE)
+	{
+		return;
+	}
+	
+	AcceptEntityInput(entity, "Kill");
+}
+
+
+public Action Timeleft(Handle timer)
+{
+	if (!CvarEnables[0] || !CvarEnables[19])return Plugin_Continue;
+	char sTime[60];
+	int iTimeleft;
+
+	GetMapTimeLeft(iTimeleft);
+	if(iTimeleft > 0)
+	{
+		FormatTime(sTime, sizeof(sTime), "%M:%S", iTimeleft);
+
+		for(int i = 1; i <= MaxClients; i++)
+		{
+			if(IsClientInGame(i) && !IsFakeClient(i))
+			{
+				char message[60];
+				Format(message, sizeof(message), "Timeleft: %s", sTime);
+				SetHudTextParams(-1.0, 1.00, 1.0, 4, 180, 255, 255, 0, 0.00, 0.00, 0.00);
+				ShowHudText(i, -1, message);
+			}
+		}
+	}
+	return Plugin_Continue;
+}
+
+
+public Action OnServerCvar(Handle hEvent, const char[] name, bool dontBroadcast)
+{
+	return (CvarEnables[0] && CvarEnables[13]) ? 
+		Plugin_Handled :
+		Plugin_Continue;
+}
+
+public Action OnPlayerDeath(Handle hEvent, const char[] name, bool dontBroadcast)
+{
+	return (((CvarEnables[0] && CvarEnables[3]) && !dontBroadcast) ? Plugin_Handled : Plugin_Continue);
+}
+
+public Action OnPlayerConnect(Handle hEvent, const char[] name, bool dontBroadcast) 
+{
+	return (CvarEnables[0] && CvarEnables[9]) ? 
+		Plugin_Handled :
+		Plugin_Continue;
+}
+
+public Action OnPlayerDisconnect(Handle hEvent, const char[] name, bool dontBroadcast) 
+{
+	return (CvarEnables[0] && CvarEnables[10]) ? 
+		Plugin_Handled :
+		Plugin_Continue;
+}
+
+public Action OnPlayerTeam(Handle hEvent, const char[] name, bool dontBroadcast) 
+{
+	if (!GetEventBool(hEvent, "disconnect") && CvarEnables[0])
+	{
+		int iOldTeam = GetEventInt(hEvent, "oldteam");
+		
+		if ((CvarEnables[11] && iOldTeam == 0)
+			|| (CvarEnables[12] && iOldTeam != 0))
+				SetEventBool(hEvent, "silent", true);
+	}
+	
+	return Plugin_Continue;
+}
+
+public Action OnPlayerSpawn(Handle hEvent, const char[] name, bool dontBroadcast) 
+{
+	new userid = GetEventInt(hEvent, "userid");
+	new client = GetClientOfUserId(userid);
+	
+	if (CvarEnables[0] && CvarEnables[1])
+	{
+		int iClient = GetClientOfUserId(GetEventInt(hEvent, "userid"));
+		CreateTimer(GetEntPropFloat(iClient, Prop_Send, "m_flFlashDuration"), Timer_RemoveRadar_Delay, iClient);
+		
+		if (client && GetClientTeam(client) == CS_TEAM_SPECTATOR)
+		{
+		new Float:fDuration = GetEntPropFloat(client, Prop_Send, "m_flFlashDuration");
+		CreateTimer(fDuration, Timer_RemoveRadar_Delay, client);
+		}
+    }
+}
+
+public Action OnPlayerBlind(Handle hEvent, const char[] name, bool dontBroadcast)  
+{
+	if (CvarEnables[0] && CvarEnables[1])
+	{
+		int iClient = GetClientOfUserId(GetEventInt(hEvent, "userid"));
+		CreateTimer(GetEntPropFloat(iClient, Prop_Send, "m_flFlashDuration"), Timer_RemoveRadar_Delay, iClient);
+    }
+}
+
+public Action Timer_RemoveRadar_Delay(Handle hTimer, any iClient)
+{
+	if (IsValidPlayer(iClient, false))
+		SetEntProp(iClient, Prop_Send, "m_iHideHUD", (1 << 12));
+}
+
+public int CHRadar(Handle cvar, char[] oldValue, char[] newValue)
+{
+	if (CvarEnables[0] && CvarEnables[1] && !GetConVarBool(HRadar))
+		SetConVarBool(HRadar, true, true, false);
+}
+
+public int CMoneyHud(Handle cvar, char[] oldValue, char[] newValue)
+{
+	if (CvarEnables[0] && CvarEnables[2] && GetConVarInt(MoneyHud) != 0)
+		SetConVarInt(MoneyHud, 0, true, false);
+}
+
+public int CIgnorenade(Handle cvar, char[] oldValue, char[] newValue)
+{
+	if (CvarEnables[0] && CvarEnables[5] && !GetConVarBool(Ignorenade))
+		SetConVarBool(Ignorenade, true, true, false);
+}
+
+public int CAllRadio(Handle cvar, char[] oldValue, char[] newValue)
+{
+	if (CvarEnables[0] && CvarEnables[6] && !GetConVarBool(Ignorenade))
+		SetConVarBool(Ignorenade, true, true, false);
+}
+
+public Action Command_Ping(int iClient, char[] command, int args)
+{
+	return (CvarEnables[0] && CvarEnables[6]) ?
+		Plugin_Handled : 
+		Plugin_Continue;
+}
+
+public Action OnRadioText(UserMsg msg_id, Protobuf bf, const int[] players, int playersNum, bool reliable, bool init)
+{
+	return (CvarEnables[0] &&  CvarEnables[7]) ?
+		Plugin_Handled : 
+		Plugin_Continue;
+}
+
+public int CCheats(Handle cvar, char[] oldValue, char[] newValue)
+{
+	bool Status;
+	if ((CvarEnables[0] && CvarEnables[8]) && (Status = GetConVarBool(Cheats)))
+		CreateTimer(0.1, CCheats_Delay, !Status);
+}
+
+public Action CCheats_Delay(Handle hTimer, any NewStatus)
+{
+	SetConVarBool(Cheats, NewStatus, true, false);
+}
+
+public Action OnRadio(int client, const char[] command, int args)
+{
+	return ((CvarEnables[0] && CvarEnables[4]) ? Plugin_Handled : Plugin_Continue);
+}
+
+public Action Command_Reload(int client, int args)
+{
+	if ((GetUserFlagBits(client) & ADMFLAG_ROOT))
+	{
+		
+		ServerCommand("exec %s", CfgFile);
+		
+		if (IsValidPlayer(client, false))
+			PrintToConsole(client, "Configuration reloaded successfully!");
+	}
+	
+	return Plugin_Handled;
+}
+
+public void OnConfigsExecuted()
+{
+	if( g_bStartRandomMap && !g_bServerStarted)
+	{
+		g_bServerStarted = true;
+		ChangeMap("Server is restarted");
+	}
+	
+	if( g_ConVarHibernate != null )
+	{
+		g_iHybernateInitial = g_ConVarHibernate.IntValue;
+		g_ConVarHibernate.SetInt(0);
+	}
+	
+	g_bPluginEnabled = GetConVarBool(g_cPluginEnabled);
+	g_iPluginTime = GetConVarInt(g_cPluginTime);
+	g_iPluginQuota = GetConVarInt(g_cPluginQuota);
+	g_bPluginManaged = GetConVarBool(g_cPluginManaged);
+	GetConVarString(g_cPluginMaps, g_sPluginMaps, sizeof(g_sPluginMaps));
+	g_bPluginMapsOrder = GetConVarBool(g_cPluginMapsOrder);
+	
+	LoadCfg();
+}
+
+void LoadCfg()
+{
+	
+	AutoExecConfig(true, CFG_NAME);
+}
+
+bool IsValidPlayer(int iClient, bool team = true, bool alive = false)
+{
+	
+	return (
+		iClient > 0 && iClient <= MaxClients
+		&& IsClientConnected(iClient) && IsClientInGame(iClient)
+		&& (!team || GetClientTeam(iClient) > 1)
+		&& (!alive || IsPlayerAlive(iClient)));
+}
+
 public Action Event_PreRoundStart(Handle event, const char[] name, bool dontBroadcast)
 {
     int T_Count = GetTeamClientCount(CS_TEAM_T);
     int CT_Count = GetTeamClientCount(CS_TEAM_CT);
     
-    if(!GetConVarBool(CvarHandles[0]) || !GetConVarBool(CvarHandles[20]) || T_Count == CT_Count || T_Count + 1 == CT_Count || CT_Count + 1 == T_Count)
+    if(!CvarEnables[0] || !GetConVarBool(h_bEnable) || T_Count == CT_Count || T_Count + 1 == CT_Count || CT_Count + 1 == T_Count)
         return Plugin_Continue;
         
     while(T_Count > CT_Count && T_Count != CT_Count + 1)
@@ -427,15 +786,13 @@ stock int GetRandomPlayer(int team)
     int clientCount;
     for (int i = 1; i <= MaxClients; i++) 
     {
-		if(!CvarEnables[0] || !CvarEnables[20])
         if (IsClientInGame(i) && GetClientTeam(i) == team)
         { 
             clients[clientCount++] = i; 
         } 
     }
     return (clientCount == 0) ? -1 : clients[GetRandomInt(0, clientCount - 1)];
-} 
-
+}
 public CvarChanged(Handle:cvar, const String:oldValue[], const String:newValue[]) {
 	if (cvar == CvarHandles[0]) {
 		g_enable = GetConVarBool(CvarHandles[0]);
@@ -552,71 +909,6 @@ public OnMapEnd() {
 	}
 }
 
-public int ConVarChanged(Handle cvar, char[] oldValue, char[] newValue)
-{
-	for (int i = 0; i < sizeof(CvarHandles); i++)
-		if (cvar == CvarHandles[i])SetConVarInt(CvarHandles[i], (CvarEnables[i] = GetConVarBool(cvar)));
-}
-
-public Action OnHookTextMsg(UserMsg msg_id, Handle bf, int[] players, int playersNum, bool reliable, bool init)
-{
-	if (!CvarEnables[0] || !CvarEnables[14])return Plugin_Continue;
-
-	char sBuffer[64];
-	PbReadString(bf, "params", sBuffer, sizeof(sBuffer), 0);
-	
-	for (int i = 0; i < sizeof(MoneyMessageArray); i++)
-	{
-		if (!strcmp(sBuffer, MoneyMessageArray[i], false))return Plugin_Handled;
-	}
-	
-	return Plugin_Continue;
-}
-
-public Action OnHookTextMsg2(UserMsg msg_id, Handle bf, int[] players, int playersNum, bool reliable, bool init)
-{
-	if (!CvarEnables[0] || !CvarEnables[15])return Plugin_Continue;
-
-	char sBuffer[64];
-	PbReadString(bf, "params", sBuffer, sizeof(sBuffer), 0);
-	
-	for (int i = 0; i < sizeof(SavedbyArray); i++)
-	{
-		if (!strcmp(sBuffer, SavedbyArray[i], false))return Plugin_Handled;
-	}
-	
-	return Plugin_Continue;
-}
-
-public Action OnHookTextMsg3(UserMsg msg_id, Handle bf, int[] players, int playersNum, bool reliable, bool init)
-{
-	if (!CvarEnables[0] || !CvarEnables[16])return Plugin_Continue;
-
-	char sBuffer[64];
-	PbReadString(bf, "params", sBuffer, sizeof(sBuffer), 0);
-	
-	for (int i = 0; i < sizeof(TeamWarningArray); i++)
-	{
-		if (!strcmp(sBuffer, TeamWarningArray[i], false))return Plugin_Handled;
-	}
-	
-	return Plugin_Continue;
-}
-
-public void OnMapStart()
-{
-	if (g_delayenable && g_hookenabled == false) {
-		g_botDelay = GetConVarInt(g_Cvar_BotDelay);
-		bot_delay_timer = CreateTimer(g_botDelay * 1.0, Timer_BotDelay);
-	}
-	
-	g_hTimerGameEnd = INVALID_HANDLE;
-	if (g_bPluginEnabled)
-	{
-		CheckPlayerQuota();
-	}
-	CreateTimer(1.0, CheckRemainingTime, INVALID_HANDLE, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-}
 
 public void OnCvarChange(Handle cvar, const char[] oldvalue, const char[] newValue)
 {
@@ -1074,308 +1366,95 @@ void RemoveCrashLog()
 	}
 }
 
-
-
 bool IsMapValidEx(char[] map)
 {
 	static char path[PLATFORM_MAX_PATH];
 	return FindMap(map, path, sizeof(path)) == FindMap_Found;
 }
 
-public Action CheckRemainingTime(Handle timer)
+public Action TE_OnEffectDispatch(const char[] te_name, const Players[], int numClients, float delay)
 {
-	if (!CvarEnables[0] || !CvarEnables[17])return Plugin_Continue;
-	Handle hTmp;	
-	hTmp = FindConVar("mp_timelimit");
-	int iTimeLimit = GetConVarInt(hTmp);			
-	if (hTmp != INVALID_HANDLE)
-		CloseHandle(hTmp);	
-	if (iTimeLimit > 0)
+	int iEffectIndex = TE_ReadNum("m_iEffectName");
+	int nHitBox = TE_ReadNum("m_nHitBox");
+	char sEffectName[64];
+
+	GetEffectName(iEffectIndex, sEffectName, sizeof(sEffectName));
+	
+	if(GetConVarBool(CvarHandles[0]) || g_cEnableNoBlood.BoolValue)
 	{
-		int timeleft;
-		GetMapTimeLeft(timeleft);
-		
-		switch(timeleft)
+		if(StrEqual(sEffectName, "csblood"))
 		{
-			case 1800: 	CPrintToChatAll("{lightred}Timeleft: 30 minutes");
-			case 1200: 	CPrintToChatAll("{lightred}Timeleft: 20 minutes");
-			case 600: 	CPrintToChatAll("{lightred}Timeleft: 10 minutes");
-			case 300: 	CPrintToChatAll("{lightred}Timeleft: 5 minutes");
-			case 120: 	CPrintToChatAll("{lightred}Timeleft: 2 minutes");
-			case 60: 	CPrintToChatAll("{lightred}Timeleft: 60 seconds");
-			case 30: 	CPrintToChatAll("{lightred}Timeleft: 30 seconds");
-			case 15: 	CPrintToChatAll("{lightred}Timeleft: 15 seconds");
-			case -1: 	CPrintToChatAll("{lightred}Timeleft: 3..");
-			case -2: 	CPrintToChatAll("{lightred}Timeleft: 2..");
-			case -3: 	CPrintToChatAll("{lightred}Timeleft: 1..");
+			if(GetConVarBool(CvarHandles[0]) || g_cEnableBloodSplatter.BoolValue)
+				return Plugin_Handled;
 		}
-		
-		if(timeleft < -3)
-			CS_TerminateRound(0.0, CSRoundEnd_Draw, true);
-	}
-	
-	return Plugin_Continue;
-}
-
-public Action CS_OnTerminateRound(float &fDelay, CSRoundEndReason &iReason)
-{
-	if (!CvarEnables[0] || !CvarEnables[17])return Plugin_Continue;
-	return Plugin_Continue;
-}
-
-public void OnEntityCreated(int entity, const char[] classname)
-{
-	if (classname[0] == 'c')
-	{
-		if (StrEqual(classname, "chicken", true))
+		if(StrEqual(sEffectName, "ParticleEffect"))
 		{
-			SDKHook(entity, SDKHook_Spawn, SDK_OnChickenSpawn);
-		}
-	}
-	else if (classname[0] == 'i')
-	{
-		if (StrEqual(classname, "info_map_parameters", true))
-		{
-			SDKHook(entity, SDKHook_Spawn, SDK_OnMapParametersSpawn);
-		}
-	}
-}
-
-public Action SDK_OnChickenSpawn(int entity)
-{
-	if (!CvarEnables[0] || !CvarEnables[18])return Plugin_Continue;
-	if (!IsValidEntity(entity))
-	{
-		return Plugin_Continue;
-	}
-	
-	RequestFrame(Frame_RemoveEntity, EntIndexToEntRef(entity));
-	return Plugin_Continue;
-}
-
-public Action SDK_OnMapParametersSpawn(int entity)
-{
-	if (!CvarEnables[0] || !CvarEnables[18])return Plugin_Continue;
-	if (!IsValidEntity(entity))
-	{
-		return Plugin_Continue;
-	}
-	
-	SetEntProp(entity, Prop_Data, "m_iPetPopulation", 0);
-	return Plugin_Continue;
-}
-
-public void Frame_RemoveEntity(int reference)
-{
-	int entity = EntRefToEntIndex(reference);
-	if (entity == INVALID_ENT_REFERENCE)
-	{
-		return;
-	}
-	
-	AcceptEntityInput(entity, "Kill");
-}
-
-
-public Action Timeleft(Handle timer)
-{
-	if (!CvarEnables[0] || !CvarEnables[19])return Plugin_Continue;
-	char sTime[60];
-	int iTimeleft;
-
-	GetMapTimeLeft(iTimeleft);
-	if(iTimeleft > 0)
-	{
-		FormatTime(sTime, sizeof(sTime), "%M:%S", iTimeleft);
-
-		for(int i = 1; i <= MaxClients; i++)
-		{
-			if(IsClientInGame(i) && !IsFakeClient(i))
+			if(GetConVarBool(CvarHandles[0]) || g_cEnableBloodSplash.BoolValue)
 			{
-				char message[60];
-				Format(message, sizeof(message), "Timeleft: %s", sTime);
-				SetHudTextParams(-1.0, 1.00, 1.0, 4, 180, 255, 255, 0, 0.00, 0.00, 0.00);
-				ShowHudText(i, -1, message);
+				char sParticleEffectName[64];
+				GetParticleEffectName(nHitBox, sParticleEffectName, sizeof(sParticleEffectName));
+				
+				if(StrEqual(sParticleEffectName, "impact_helmet_headshot") || StrEqual(sParticleEffectName, "impact_physics_dust"))
+					return Plugin_Handled;
 			}
 		}
 	}
+
 	return Plugin_Continue;
 }
 
-
-public Action OnServerCvar(Handle hEvent, const char[] name, bool dontBroadcast)
+public Action TE_OnWorldDecal(const char[] te_name, const Players[], int numClients, float delay)
 {
-	return (CvarEnables[0] && CvarEnables[13]) ? 
-		Plugin_Handled :
-		Plugin_Continue;
-}
+	float vecOrigin[3];
+	int nIndex = TE_ReadNum("m_nIndex");
+	char sDecalName[64];
 
-public Action OnPlayerDeath(Handle hEvent, const char[] name, bool dontBroadcast)
-{
-	return (((CvarEnables[0] && CvarEnables[3]) && !dontBroadcast) ? Plugin_Handled : Plugin_Continue);
-}
-
-public Action OnPlayerConnect(Handle hEvent, const char[] name, bool dontBroadcast) 
-{
-	return (CvarEnables[0] && CvarEnables[9]) ? 
-		Plugin_Handled :
-		Plugin_Continue;
-}
-
-public Action OnPlayerDisconnect(Handle hEvent, const char[] name, bool dontBroadcast) 
-{
-	return (CvarEnables[0] && CvarEnables[10]) ? 
-		Plugin_Handled :
-		Plugin_Continue;
-}
-
-public Action OnPlayerTeam(Handle hEvent, const char[] name, bool dontBroadcast) 
-{
-	if (!GetEventBool(hEvent, "disconnect") && CvarEnables[0])
-	{
-		int iOldTeam = GetEventInt(hEvent, "oldteam");
-		
-		if ((CvarEnables[11] && iOldTeam == 0)
-			|| (CvarEnables[12] && iOldTeam != 0))
-				SetEventBool(hEvent, "silent", true);
-	}
+	TE_ReadVector("m_vecOrigin", vecOrigin);
+	GetDecalName(nIndex, sDecalName, sizeof(sDecalName));
 	
+	if(GetConVarBool(CvarHandles[0]) || g_cEnableNoBlood.BoolValue)
+	{
+		if(StrContains(sDecalName, "decals/blood") == 0 && StrContains(sDecalName, "_subrect") != -1)
+			if(GetConVarBool(CvarHandles[0]) || g_cEnableBloodSplash.BoolValue)
+				return Plugin_Handled;
+	}
+
 	return Plugin_Continue;
 }
 
-public Action OnPlayerSpawn(Handle hEvent, const char[] name, bool dontBroadcast) 
+stock bool IsClientValid(int client)
 {
-	if (CvarEnables[0] && CvarEnables[1])
-		CreateTimer(0.0, Timer_RemoveRadar_Delay, GetClientOfUserId(GetEventInt(hEvent, "userid")));
+	if(client > 0 && client <= MaxClients && IsClientInGame(client))
+		return true;
+	return false;
 }
 
-public Action OnPlayerBlind(Handle hEvent, const char[] name, bool dontBroadcast)  
+stock int GetParticleEffectName(int index, char[] sEffectName, int maxlen)
 {
-	new userid = GetEventInt(hEvent, "userid");
-	new client = GetClientOfUserId(userid);
+	int table = INVALID_STRING_TABLE;
 	
-	if (CvarEnables[0] && CvarEnables[1])
-	{
-		int iClient = GetClientOfUserId(GetEventInt(hEvent, "userid"));
-		CreateTimer(GetEntPropFloat(iClient, Prop_Send, "m_flFlashDuration"), Timer_RemoveRadar_Delay, iClient);
-		
-		if (client && GetClientTeam(client) == CS_TEAM_SPECTATOR)
-		{
-		new Float:fDuration = GetEntPropFloat(client, Prop_Send, "m_flFlashDuration");
-		CreateTimer(fDuration, Timer_RemoveRadar_Delay, client);
-		}
-    }
-}
-
-public Action Timer_RemoveRadar_Delay(Handle hTimer, any iClient)
-{
-	if (IsValidPlayer(iClient, false))
-		SetEntProp(iClient, Prop_Send, "m_iHideHUD", (1 << 12));
-}
-
-public int CHRadar(Handle cvar, char[] oldValue, char[] newValue)
-{
-	if (CvarEnables[0] && CvarEnables[1] && !GetConVarBool(HRadar))
-		SetConVarBool(HRadar, true, true, false);
-}
-
-public int CMoneyHud(Handle cvar, char[] oldValue, char[] newValue)
-{
-	if (CvarEnables[0] && CvarEnables[2] && GetConVarInt(MoneyHud) != 0)
-		SetConVarInt(MoneyHud, 0, true, false);
-}
-
-public int CIgnorenade(Handle cvar, char[] oldValue, char[] newValue)
-{
-	if (CvarEnables[0] && CvarEnables[5] && !GetConVarBool(Ignorenade))
-		SetConVarBool(Ignorenade, true, true, false);
-}
-
-public int CAllRadio(Handle cvar, char[] oldValue, char[] newValue)
-{
-	if (CvarEnables[0] && CvarEnables[6] && !GetConVarBool(Ignorenade))
-		SetConVarBool(Ignorenade, true, true, false);
-}
-
-public Action Command_Ping(int iClient, char[] command, int args)
-{
-	return (CvarEnables[0] && CvarEnables[6]) ?
-		Plugin_Handled : 
-		Plugin_Continue;
-}
-
-public Action OnRadioText(UserMsg msg_id, Protobuf bf, const int[] players, int playersNum, bool reliable, bool init)
-{
-	return (CvarEnables[0] &&  CvarEnables[7]) ?
-		Plugin_Handled : 
-		Plugin_Continue;
-}
-
-public int CCheats(Handle cvar, char[] oldValue, char[] newValue)
-{
-	bool Status;
-	if ((CvarEnables[0] && CvarEnables[8]) && (Status = GetConVarBool(Cheats)))
-		CreateTimer(0.1, CCheats_Delay, !Status);
-}
-
-public Action CCheats_Delay(Handle hTimer, any NewStatus)
-{
-	SetConVarBool(Cheats, NewStatus, true, false);
-}
-
-public Action OnRadio(int client, const char[] command, int args)
-{
-	return ((CvarEnables[0] && CvarEnables[4]) ? Plugin_Handled : Plugin_Continue);
-}
-
-public Action Command_Reload(int client, int args)
-{
-	if ((GetUserFlagBits(client) & ADMFLAG_ROOT))
-	{
-		
-		ServerCommand("exec %s", CfgFile);
-		
-		if (IsValidPlayer(client, false))
-			PrintToConsole(client, "Configuration reloaded successfully!");
-	}
+	if (table == INVALID_STRING_TABLE)
+		table = FindStringTable("ParticleEffectNames");
 	
-	return Plugin_Handled;
+	return ReadStringTable(table, index, sEffectName, maxlen);
 }
 
-public void OnConfigsExecuted()
+stock int GetEffectName(int index, char[] sEffectName, int maxlen)
 {
-	if( g_bStartRandomMap && !g_bServerStarted)
-	{
-		g_bServerStarted = true;
-		ChangeMap("Server is restarted");
-	}
-	if( g_ConVarHibernate != null )
-	{
-		g_iHybernateInitial = g_ConVarHibernate.IntValue;
-		g_ConVarHibernate.SetInt(0);
-	}
+	int table = INVALID_STRING_TABLE;
 	
-	g_bPluginEnabled = GetConVarBool(g_cPluginEnabled);
-	g_iPluginTime = GetConVarInt(g_cPluginTime);
-	g_iPluginQuota = GetConVarInt(g_cPluginQuota);
-	g_bPluginManaged = GetConVarBool(g_cPluginManaged);
-	GetConVarString(g_cPluginMaps, g_sPluginMaps, sizeof(g_sPluginMaps));
-	g_bPluginMapsOrder = GetConVarBool(g_cPluginMapsOrder);
-	LoadCfg();
+	if (table == INVALID_STRING_TABLE)
+		table = FindStringTable("EffectDispatch");
+	
+	return ReadStringTable(table, index, sEffectName, maxlen);
 }
 
-void LoadCfg()
+stock int GetDecalName(int index, char[] sDecalName, int maxlen)
 {
+	int table = INVALID_STRING_TABLE;
 	
-	AutoExecConfig(true, CFG_NAME);
-}
-
-bool IsValidPlayer(int iClient, bool team = true, bool alive = false)
-{
+	if (table == INVALID_STRING_TABLE)
+		table = FindStringTable("decalprecache");
 	
-	return (
-		iClient > 0 && iClient <= MaxClients
-		&& IsClientConnected(iClient) && IsClientInGame(iClient)
-		&& (!team || GetClientTeam(iClient) > 1)
-		&& (!alive || IsPlayerAlive(iClient)));
+	return ReadStringTable(table, index, sDecalName, maxlen);
 }
