@@ -250,7 +250,7 @@ sm_restart_empty_method "2"
 - Fix "sm_enable_hide_and_block Feature"
 - Added Hide blood
 - Added Hide Blood Splash
-- Added Blood Splatter
+- Added Hide Blood Splatter
 
 (1.0.1)
 - Fix Bug
