@@ -100,7 +100,7 @@ sm_forceendmap "0"
 // .::[Map Rotation Feature]::.  || 1= Yes || 0= No
 sm_rotation_enable "0"
 
-// Method (Need To Enable sm_rotation_enable)  || 0= Custom Maplist (Create New Line [gamemanager] + path In Sourcemod/configs/maplists.cfg) || 1= Sm_nextmap Or Mapcycle (Requires Nextmap.smx) || 2= Load Map In sm_rotation_default_map Cvar || 3= Reload Curr
+// (Need To Enable sm_rotation_enable) || 0= Custom Maplist (Create New Line [gamemanager] + path In Sourcemod/configs/maplists.cfg) || 1= Sm_nextmap Or Mapcycle (Requires Nextmap.smx) || 2= Load Map In sm_rotation_default_map Cvar || 3= Reload Current Map
 sm_rotation_mode "0"
 
 // (in min.) Pass While The Client Limit Has Not Been Reached For Rotation Feature To Occur (Need To Enable sm_rotation_enable)
