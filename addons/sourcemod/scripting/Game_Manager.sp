@@ -5,7 +5,7 @@
 #define PluginDesc "Game Manager ( Hide radar, money, messages, ping, and more )"
 
 #define PluginAuthor "Gold_KingZ + MrQout"
-#define PluginVersion "1.0.2"
+#define PluginVersion "1.0.3"
 
 #define PluginSite "https://steamcommunity.com/id/oQYh"
 
@@ -25,57 +25,45 @@
 #include <sdkhooks>
 #include <sdktools_functions>
 
+new Handle:rotation_client_limit = INVALID_HANDLE;
+new Handle:rotation_include_bots = INVALID_HANDLE;
+new Handle:rotation_time_limit = INVALID_HANDLE;
+new Handle:rotation_mode = INVALID_HANDLE;
+new Handle:rotation_default_map = INVALID_HANDLE;
+new Handle:rotation_config_to_exec = INVALID_HANDLE;
 
-Handle g_cPluginEnabled = INVALID_HANDLE;
-Handle g_cPluginTime = INVALID_HANDLE;
-Handle g_cPluginQuota = INVALID_HANDLE;
-Handle g_cPluginManaged = INVALID_HANDLE;
-Handle g_cPluginMaps = INVALID_HANDLE;
-Handle g_cPluginMapsOrder = INVALID_HANDLE;
-Handle c_cSmNextmap = INVALID_HANDLE;
-Handle g_cSv_hibernate_when_empty = INVALID_HANDLE;
-Handle h_bEnable;
-Handle g_hTimerGameEnd = INVALID_HANDLE;
-Handle hPluginMe;
+new Handle:g_MapList = INVALID_HANDLE;
 
-ConVar g_cEnableBloodSplatter = null;
-ConVar g_cEnableBloodSplash = null;
-ConVar g_cEnableNoBlood = null;
+new g_MapPos;
+new g_MapListSerial;
+new minutesBelowClientLimit;
+new bool:rotationMapChangeOccured;
+
+
+
 ConVar g_ConVarEnable;
 ConVar g_ConVarMethod;
 ConVar g_ConVarDelay;
 ConVar g_ConVarHibernate;
+ConVar g_cEnableNoBlood;
+ConVar g_cEnableNoSplatter;
 
-bool g_bPluginEnabled;
-bool g_bPluginManaged;
-bool g_bPluginMapsOrder;
+
 bool g_bCvarEnabled;
-bool g_bStartRandomMap;
-bool g_bServerStarted;
 
-int g_iPluginTime;
-int g_iPluginQuota;
-int g_iMapListIndex = 0;
 int g_iCvarMethod;
 int g_iHybernateInitial;
 
-char g_sPluginMaps[PLATFORM_MAX_PATH];
-char g_sMapListPath[PLATFORM_MAX_PATH];
+
+
 char g_sLogPath[PLATFORM_MAX_PATH];
 char CfgFile[PLATFORM_MAX_PATH];
 
-ArrayList g_aMapList;
-float g_fCvarDelay;
 
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
-{
-	hPluginMe = myself;
-	if( late )
-	{
-		g_bServerStarted = true;
-	}
-	return APLRes_Success;
-}
+float g_fCvarDelay;
+Handle h_bEnable;
+Handle hPluginMe;
+
 
 new Handle: g_Cvar_BotDelayEnable = INVALID_HANDLE;
 new Handle:g_Cvar_BotQuota = INVALID_HANDLE;
@@ -113,13 +101,13 @@ Handle
 
 Handle CvarHandles[] =
 {
-	null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null
+	null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null
 };
 
 
 bool CvarEnables[] =
 {
-	false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
+	false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
 };
 
 
@@ -249,28 +237,30 @@ public void OnPluginStart()
 	HookConVarChange((CvarHandles[17] = CreateConVar("sm_forceendmap" , DefaultValue, "Force End Map With Command mp_timelimit (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[18] = CreateConVar("sm_block_chicken" , DefaultValue, "Remove Chickens (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[19] = CreateConVar("sm_show_timeleft_hud" , DefaultValue, "Show Timeleft HUD (mp_timelimit) At Bottom  (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-	h_bEnable = CreateConVar("sm_auto_balance_every_round", "1", "Auto Balance Every Round (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
-	g_Cvar_BotQuota = CreateConVar("sm_block_bots", "0", "Permanently Remove bots (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No");
-	g_cEnableNoBlood = CreateConVar("sm_hide_blood", "0", "Hide blood (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
-	g_cEnableBloodSplatter = CreateConVar("sm_hide_blood_splatter", "0", "Hide Blood Splatter (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
-	g_cEnableBloodSplash = CreateConVar("sm_hide_blood_splash", "0", "Hide Blood Splash (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
-	
-	g_cPluginEnabled = CreateConVar("sm_enable_rotation", "0", ".::[Map Rotation Feature]::.  || 1= Yes || 0= No");
-	g_cPluginTime = CreateConVar("sm_rotation_timelimit", "20", "Time (in minutes) To Start Rotation When sm_rotation_player_quota Not Reach The Players Needed (Need To Enable sm_enable_rotation)");
-	g_cPluginQuota = CreateConVar("sm_rotation_player_quota", "1", "Number Of Players Needed To Cancel sm_rotation_timelimit Changing The Map (Need To Enable sm_enable_rotation)");
-	g_cPluginManaged = CreateConVar("sm_rotation_maplist_enabled", "1", " Make Rotation Specific File Maplist (Need To Enable sm_enable_rotation) || 1= Yes || 0= No");
-	g_cPluginMaps = CreateConVar("sm_rotation_maplist", "addons/sourcemod/configs/game_manager_maps.txt", "Location Maplist File (Need To Enable sm_enable_rotation)");
-	g_cPluginMapsOrder = CreateConVar("sm_rotation_maplist_order", "1", "How Would You Like It The Map Order (Need To Enable sm_enable_rotation) || 1= Random || 0= Linear");
+	HookConVarChange((CvarHandles[20] = CreateConVar("sm_block_changename_message" , DefaultValue, "Hide Change Name Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[21] = CreateConVar("sm_rotation_enable" , "0", ".::[Map Rotation Feature]::.  || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
+	h_bEnable = CreateConVar("sm_auto_balance_every_round", DefaultValue, "Auto Balance Every Round (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_Cvar_BotQuota = CreateConVar("sm_block_bots", DefaultValue, "Permanently Remove bots (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No");
+	g_cEnableNoBlood = CreateConVar("sm_hide_blood", DefaultValue, "Remove Blood (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_cEnableNoSplatter  = CreateConVar("sm_hide_splatter", DefaultValue, "Remove Splatter Effect (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	
 	( g_ConVarEnable 	= CreateConVar("sm_restart_empty_enable", 					"0", 	".::[Restart Server When Last Player Disconnect Feature]::. || 1= Yes || 0= No ", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
 	( g_ConVarMethod 	= CreateConVar("sm_restart_empty_method", 					"2", 	"When server is empty Which Method Do You Like (Need To Enable sm_restart_empty_enable) || 1= Restart || 2= Crash If Method 1 Is Not work", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
 	( g_ConVarDelay 	= CreateConVar("sm_restart_empty_delay", 					"60.0", 	"(in sec.) To Wait To Start sm_restart_empty_method (Need To Enable sm_restart_empty_enable)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
+		
+	rotation_client_limit = CreateConVar("sm_rotation_client_limit", "1", "Number Of Clients That Must Be Connected To Disable Map Rotation Feature (Need To Enable sm_rotation_enable)", _, true, 0.0, false, 0.0);
+	rotation_include_bots = CreateConVar("sm_rotation_include_bots", "0", "Include Bots In The Client Count (Remember, Sourcetv Counts As A Bot) (Need To Enable sm_rotation_enable)", _, true, 0.0, true, 1.0);
+	rotation_time_limit = CreateConVar("sm_rotation_time_limit", "5", "(in min.) Pass While The Client Limit Has Not Been Reached For Rotation Feature To Occur (Need To Enable sm_rotation_enable)", _, true, 0.0, false, 0.0);
+	rotation_mode = CreateConVar("sm_rotation_mode", "0", "Method (Need To Enable sm_rotation_enable)  || 0= Custom Maplist (Create New Line [gamemanager] + path In Sourcemod/configs/maplists.cfg) || 1= Sm_nextmap Or Mapcycle (Requires Nextmap.smx) || 2= Load Map In sm_rotation_default_map Cvar || 3= Reload Current Map", _, true, 0.0, true, 3.0);
+	rotation_default_map = CreateConVar("sm_rotation_default_map", "", "Map To Load If (sm_rotation_mode Is Set To 2) (Need To Enable sm_rotation_enable)");
+	rotation_config_to_exec = CreateConVar("sm_rotation_config_to_exec", "", "Config To Exec When An Rotation Feature Occurs, If Desired.  Executes After The Map Loads And Server.cfg And Sourcemod Plugin Configs Are Exec'd (Need To Enable sm_rotation_enable)");
 	
-	int iArraySize = ByteCountToCells(64);
-	g_aMapList = new ArrayList(iArraySize);
+	g_MapList = CreateArray(32);
 
-	c_cSmNextmap = FindConVar("sm_nextmap");
-	g_cSv_hibernate_when_empty = FindConVar("sv_hibernate_when_empty"); SetConVarInt(g_cSv_hibernate_when_empty, 0);
+	g_MapPos = -1;
+	g_MapListSerial = -1;
+	minutesBelowClientLimit = 0;
+	rotationMapChangeOccured = false;
 	
 	g_enable = GetConVarBool(CvarHandles[0]);
 	HookConVarChange(CvarHandles[0], CvarChanged);
@@ -294,7 +284,6 @@ public void OnPluginStart()
 	
 	LoadCfg();
 	
-	
 
 	
 	HRadar 	   = FindConVar("sv_disable_radar");
@@ -308,8 +297,7 @@ public void OnPluginStart()
 	
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
 	
-	AddTempEntHook("EffectDispatch", TE_OnEffectDispatch);
-	AddTempEntHook("World Decal", TE_OnWorldDecal);
+	
 	HookEvent("player_spawn", OnPlayerSpawn);
 	HookEvent("player_blind", OnPlayerBlind);
 	HookEvent("round_prestart", Event_PreRoundStart);
@@ -317,15 +305,11 @@ public void OnPluginStart()
 	HookEvent("player_team",  		OnPlayerTeam, 		EventHookMode_Pre);
 	HookEvent("player_connect", 	OnPlayerConnect, 	EventHookMode_Pre);
 	HookEvent("player_disconnect", 	OnPlayerDisconnect, EventHookMode_Pre);
-	HookConVarChange(g_cPluginEnabled, OnCvarChange);
-	HookConVarChange(g_cPluginTime, OnCvarChange);
-	HookConVarChange(g_cPluginQuota, OnCvarChange);
-	HookConVarChange(g_cPluginManaged, OnCvarChange);
-	HookConVarChange(g_cPluginMaps, OnCvarChange);
-	HookConVarChange(g_cPluginMapsOrder, OnCvarChange);
-	HookConVarChange(g_cSv_hibernate_when_empty, OnCvarChange);
-	
-	
+	AddTempEntHook("Blood Sprite", TE_OnWorldDecal);
+	AddTempEntHook("Entity Decal", TE_OnWorldDecal);
+	AddTempEntHook("EffectDispatch", TE_OnEffectDispatch);
+	AddTempEntHook("World Decal", TE_OnWorldDecal);
+	AddTempEntHook("Impact", TE_OnWorldDecal);
 	
 	if (HRadar != null)
 	{
@@ -356,6 +340,7 @@ public void OnPluginStart()
 	HookUserMessage(GetUserMessageId("TextMsg"), OnHookTextMsg, true);
 	HookUserMessage(GetUserMessageId("TextMsg"), OnHookTextMsg2, true);
 	HookUserMessage(GetUserMessageId("TextMsg"), OnHookTextMsg3, true);
+	HookUserMessage(GetUserMessageId("SayText2"), OnHookTextMsg4, true);
 	
 	HookUserMessage(GetUserMessageId("RadioText"), OnRadioText, true);
 	AddCommandListener(Command_Ping, "chatwheel_ping");
@@ -382,7 +367,6 @@ public void OnPluginEnd()
 	UnhookEvent("player_spawn", OnPlayerSpawn);
 	UnhookEvent("player_blind", OnPlayerBlind);
 	
-	g_aMapList.Clear();
 }
 
 public int ConVarChanged(Handle cvar, char[] oldValue, char[] newValue)
@@ -436,6 +420,24 @@ public Action OnHookTextMsg3(UserMsg msg_id, Handle bf, int[] players, int playe
 	return Plugin_Continue;
 }
 
+public Action OnHookTextMsg4(UserMsg msg_id, Handle bf, int[] players, int playersNum, bool reliable, bool init)
+{
+	if (!CvarEnables[0] || !CvarEnables[20])return Plugin_Continue;
+
+	new String:buffer[25];
+	
+	if(GetUserMessageType() == UM_Protobuf) // CSGO
+    {
+        PbReadString(bf, "msg_name", buffer, sizeof(buffer));
+
+        if(StrEqual(buffer, "#Cstrike_Name_Change"))
+        {
+            return Plugin_Handled;
+        }
+    }
+	return Plugin_Continue;
+}
+
 public void OnMapStart()
 {
 	if (g_delayenable && g_hookenabled == false) {
@@ -443,15 +445,91 @@ public void OnMapStart()
 		bot_delay_timer = CreateTimer(g_botDelay * 1.0, Timer_BotDelay);
 	}
 	
-	g_hTimerGameEnd = INVALID_HANDLE;
-	if (g_bPluginEnabled)
-	{
-		CheckPlayerQuota();
-	}
-	
 	CreateTimer(1.0, CheckRemainingTime, INVALID_HANDLE, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 }
 
+//#
+public Action TE_OnEffectDispatch(const char[] te_name, const Players[], int numClients, float delay)
+{
+	if (!CvarEnables[0] || !g_cEnableNoSplatter.BoolValue) return Plugin_Continue;
+
+	int iEffectIndex = TE_ReadNum("m_iEffectName");
+	int nHitBox = TE_ReadNum("m_nHitBox");
+	char sEffectName[64];
+
+	GetEffectName(iEffectIndex, sEffectName, sizeof(sEffectName));
+
+	if (StrEqual(sEffectName, "csblood")|| StrEqual(sEffectName, "Impact"))
+	{	
+		return Plugin_Handled;
+	}
+
+	if (StrEqual(sEffectName, "ParticleEffect"))
+	{
+		char sParticleEffectName[64];
+		GetParticleEffectName(nHitBox, sParticleEffectName, sizeof(sParticleEffectName));
+		if(StrEqual(sParticleEffectName, "impact_helmet_headshot"))
+		{
+			return Plugin_Handled;
+		}
+	}
+	return Plugin_Continue;
+}
+
+public Action TE_OnWorldDecal(const char[] te_name, const Players[], int numClients, float delay)
+{
+	if (!CvarEnables[0] || !g_cEnableNoBlood.BoolValue) return Plugin_Continue;
+
+	float vecOrigin[3];
+	int nIndex = TE_ReadNum("m_nIndex");
+	char sDecalName[64];
+
+	TE_ReadVector("m_vecOrigin", vecOrigin);
+	GetDecalName(nIndex, sDecalName, sizeof(sDecalName));
+
+	if (StrContains(sDecalName, "decals/blood") == 0 && StrContains(sDecalName, "_subrect") != -1)
+	{
+		return Plugin_Handled;
+	}
+	return Plugin_Continue;
+}
+
+stock int GetParticleEffectName(int index, char[] sEffectName, int maxlen)
+{
+	int table = INVALID_STRING_TABLE;
+
+	if (table == INVALID_STRING_TABLE)
+	{
+		table = FindStringTable("ParticleEffectNames");
+	}
+
+	return ReadStringTable(table, index, sEffectName, maxlen);
+}
+
+stock int GetEffectName(int index, char[] sEffectName, int maxlen)
+{
+	int table = INVALID_STRING_TABLE;
+
+	if (table == INVALID_STRING_TABLE)
+	{
+		table = FindStringTable("EffectDispatch");
+	}
+
+	return ReadStringTable(table, index, sEffectName, maxlen);
+}
+
+stock int GetDecalName(int index, char[] sDecalName, int maxlen)
+{
+	int table = INVALID_STRING_TABLE;
+
+	if (table == INVALID_STRING_TABLE)
+	{
+		table = FindStringTable("decalprecache");
+	}
+
+	return ReadStringTable(table, index, sDecalName, maxlen);
+}
+//#
 public Action CheckRemainingTime(Handle timer)
 {
 	if (!CvarEnables[0] || !CvarEnables[17])return Plugin_Continue;
@@ -717,24 +795,26 @@ public Action Command_Reload(int client, int args)
 
 public void OnConfigsExecuted()
 {
-	if( g_bStartRandomMap && !g_bServerStarted)
+	new String:acmConfigToExecValue[32];
+	GetConVarString(rotation_config_to_exec, acmConfigToExecValue, sizeof(acmConfigToExecValue));
+	if (rotationMapChangeOccured && strcmp(acmConfigToExecValue, "") != 0)
 	{
-		g_bServerStarted = true;
-		ChangeMap("Server is restarted");
+		PrintToServer("Game_Manager : Exec'ing %s.", acmConfigToExecValue);
+		ServerCommand("exec %s", acmConfigToExecValue);
 	}
+
+	minutesBelowClientLimit = 0;
+	rotationMapChangeOccured = false;
+
+	CreateTimer(60.0, CheckPlayerCount, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+	
+
 	
 	if( g_ConVarHibernate != null )
 	{
 		g_iHybernateInitial = g_ConVarHibernate.IntValue;
 		g_ConVarHibernate.SetInt(0);
 	}
-	
-	g_bPluginEnabled = GetConVarBool(g_cPluginEnabled);
-	g_iPluginTime = GetConVarInt(g_cPluginTime);
-	g_iPluginQuota = GetConVarInt(g_cPluginQuota);
-	g_bPluginManaged = GetConVarBool(g_cPluginManaged);
-	GetConVarString(g_cPluginMaps, g_sPluginMaps, sizeof(g_sPluginMaps));
-	g_bPluginMapsOrder = GetConVarBool(g_cPluginMapsOrder);
 	
 	LoadCfg();
 }
@@ -909,219 +989,6 @@ public OnMapEnd() {
 	}
 }
 
-
-public void OnCvarChange(Handle cvar, const char[] oldvalue, const char[] newValue)
-{
-	if (cvar == g_cPluginEnabled)
-	{
-		g_bPluginEnabled = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == g_cPluginTime)
-	{
-		g_iPluginTime = StringToInt(newValue);
-		if(g_hTimerGameEnd != INVALID_HANDLE)
-		{
-			KillTimer(g_hTimerGameEnd);
-			g_hTimerGameEnd = INVALID_HANDLE;
-		}
-		CheckPlayerQuota();
-	}
-	else if (cvar == g_cPluginQuota)
-	{
-		g_iPluginQuota = StringToInt(newValue);
-	}
-	else if (cvar == g_cPluginManaged)
-	{
-		g_bPluginManaged = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == g_cPluginMaps)
-	{
-		strcopy(g_sPluginMaps, sizeof(g_sPluginMaps), newValue);
-		g_iMapListIndex = 0;
-		MapListLoad();
-	}
-	else if (cvar == g_cPluginMapsOrder)
-	{
-		g_bPluginMapsOrder = view_as<bool>(StringToInt(newValue));
-		g_iMapListIndex = 0;
-	}
-	else if (cvar == g_cSv_hibernate_when_empty)
-	{
-		if (StringToInt(newValue) == 0)
-		{
-			return;
-		}
-		else
-		{
-			SetConVarInt(g_cSv_hibernate_when_empty, 0);
-		}
-	}
-}
-
-stock void CheckPlayerQuota()
-{
-	int i_Players;
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if (IsClientConnected(i) && !IsFakeClient(i))
-		{
-			i_Players ++;
-		}
-	}
-	
-	if (i_Players < g_iPluginQuota && g_hTimerGameEnd == INVALID_HANDLE)
-	{
-		float f_TimerDelay = g_iPluginTime*60.0;
-		g_hTimerGameEnd = CreateTimer(f_TimerDelay, GameEnd, _, TIMER_FLAG_NO_MAPCHANGE);
-		PrintToServer("[SM] Not enough players, map will change in %d minutes.", g_iPluginTime);
-	}
-	else if (i_Players >= g_iPluginQuota && g_hTimerGameEnd != INVALID_HANDLE)
-	{
-		KillTimer(g_hTimerGameEnd);
-		g_hTimerGameEnd = INVALID_HANDLE;
-		PrintToServer("[SM] Player quota reached, map change cancelled.", g_iPluginTime);
-	}
-}
-
-void MapListLoad()
-{
-	g_aMapList.Clear();
-
-	if(!FileExists(g_sPluginMaps))
-	{
-		SetFailState("%s not parsed... file doesn't exist!", g_sPluginMaps);
-	}
-
-	Handle h_MapList = OpenFile(g_sPluginMaps, "r");
-
-	if (h_MapList  == INVALID_HANDLE)
-	{
-		SetFailState("%s not parsed... file doesn't exist!", g_sPluginMaps);
-	}
-	
-	PrintToServer("[SM] Load Map List - %s !", g_sPluginMaps);
-	char s_line[64];
-	
-	while(!IsEndOfFile(h_MapList))
-	{
-		ReadFileLine(h_MapList,s_line,sizeof(s_line));
-		TrimString(s_line);
-		if(strlen(s_line) == 0)
-		{
-			continue;
-		}
-		g_aMapList.PushString(s_line);
-	}
-	CloseHandle(h_MapList);
-}
-
-public void OnClientConnected(int client)
-{
-	if (g_bPluginEnabled)
-	{
-		CheckPlayerQuota();
-	}
-}
-
-public void OnClientDisconnect_Post(int client)
-{
-	if (g_bPluginEnabled)
-	{
-		CheckPlayerQuota();
-	}
-}
-
-public Action GameEnd(Handle timer)
-{
-	CheckPlayerQuota();
-
-	if (g_aMapList.Length <= 0) MapListLoad();
-
-	if (g_hTimerGameEnd != INVALID_HANDLE)
-	{
-		char s_NextMap[64];
-		int i_Randoverlay;
-
-		if (g_bPluginManaged)
-		{
-			if(g_bPluginMapsOrder)
-			{
-				i_Randoverlay = GetRandomInt(0, (g_aMapList.Length - 1));
-				g_aMapList.GetString(i_Randoverlay, s_NextMap, sizeof(s_NextMap));
-			}
-			else
-			{
-				if(g_iMapListIndex >= g_aMapList.Length - 1)
-				{
-					g_iMapListIndex = g_aMapList.Length - 1;
-					g_aMapList.GetString(g_iMapListIndex, s_NextMap, sizeof(s_NextMap));
-					g_iMapListIndex = 0;
-				}
-				else
-				{
-					g_aMapList.GetString(g_iMapListIndex, s_NextMap, sizeof(s_NextMap));
-					g_iMapListIndex++;
-				}
-			}
-			
-			if (!IsMapValid(s_NextMap))
-			{
-				i_Randoverlay = GetRandomInt(0, (g_aMapList.Length - 1));
-				g_aMapList.GetString(i_Randoverlay, s_NextMap, sizeof(s_NextMap));
-				
-				if (!IsMapValid(s_NextMap))
-				{
-					PrintToServer("[SM] %s not parsed... file doesn't exist!", s_NextMap);
-					SetFailState("%s not parsed... file doesn't exist!", s_NextMap);
-				}
-				else
-				{
-					SetConVarString(c_cSmNextmap, s_NextMap, false, false);
-					PrintToServer("[SM] Not enough players, change map to %s...", s_NextMap);
-				}
-			}
-			else
-			{
-				SetConVarString(c_cSmNextmap, s_NextMap, false, false);
-				PrintToServer("[SM] Not enough players, change map to %s...", s_NextMap);
-			}
-		}
-		else
-		{
-			GetNextMap(s_NextMap, sizeof(s_NextMap));
-			PrintToServer("[SM] Not enough players, change map to %s...", s_NextMap);
-		}
-
-		int iGameEnd  = FindEntityByClassname(-1, "game_end");
-		if (iGameEnd == -1 && (iGameEnd = CreateEntityByName("game_end")) == -1) 
-		{     
-			LogError("Unable to create entity \"game_end\"!");
-		} 
-		else 
-		{     
-			AcceptEntityInput(iGameEnd, "EndGame");
-		}
-
-		int i_Players;
-		for (int i = 1; i <= MaxClients; i++)
-		{
-			if (IsClientConnected(i) && !IsFakeClient(i))
-			{
-				i_Players ++;
-			}
-		}
-		if (i_Players == 0) {
-			PrintToServer("[SM] Empty server, call ForceChangeLevel to %s...", s_NextMap);
-			ForceChangeLevel(s_NextMap, "MR NextMap");
-		}
-	}
-	else
-	{
-		PrintToServer("[SM] Player quota reached, map change cancelled.");
-	}
-}
-
-
 public Action CmdTime(int client, int args)
 {
 	char s[16];
@@ -1139,7 +1006,6 @@ void GetCvars()
 	g_bCvarEnabled = g_ConVarEnable.BoolValue;
 	g_iCvarMethod = g_ConVarMethod.IntValue;
 	g_fCvarDelay = g_ConVarDelay.FloatValue;
-	
 	InitHook();
 }
 
@@ -1225,54 +1091,6 @@ void RestartServer()
 	}
 }
 
-void ChangeMap(char[] reason)
-{
-	char sMap[64];
-	SetRandomSeed(GetTime());
-	
-	ArrayList al = new ArrayList(ByteCountToCells(sizeof(sMap)));
-	
-	if( FileExists(g_sMapListPath) )
-	{
-		File file = OpenFile(g_sMapListPath, "r", false);
-		if( file )
-		{
-			while( !file.EndOfFile() )
-			{
-				file.ReadLine(sMap, sizeof(sMap));
-				TrimString(sMap);
-
-				if( sMap[0] != 0 && sMap[0] != '\\' && sMap[0] != '<' )
-				{
-					if( IsMapValidEx(sMap) )
-					{
-						al.PushString(sMap);
-					}
-				}
-			}
-			file.Close();
-		}
-	}
-	if( al.Length > 0 )
-	{
-		int idx = GetRandomInt(0, al.Length - 1);
-		al.GetString(idx, sMap, sizeof(sMap));
-	}
-	else {
-		GetCurrentMap(sMap, sizeof(sMap));
-		LogError("Warning: no valid maps found in: %s", g_sMapListPath);
-	}
-	delete al;
-	LogToFileEx(g_sLogPath, "Changing map to: %s... Reason: %s", sMap, reason);
-	if( CommandExists("sm_map") )
-	{
-		ServerCommand("sm_map %s", sMap);
-	}
-	else {
-		ForceChangeLevel(sMap, reason);
-	}
-}
-
 void KickAll()
 {
 	for( int i = 1; i <= MaxClients; i++ )
@@ -1316,7 +1134,167 @@ public Action Timer_DoHybernate(Handle timer)
 	}
 	return Plugin_Continue;
 }
+//#
+public Action:CheckPlayerCount(Handle:timer)
+{
+	new acmClientLimitValue = GetConVarInt(rotation_client_limit);
+	
+	if (GetConVarInt(rotation_include_bots) == 0)
+	{
+		int players;
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if (IsClientConnected(i) && !IsFakeClient(i))
+			{
+				players ++;
+				}
+		}
+		if (players < acmClientLimitValue)
+		{
+			minutesBelowClientLimit++;
+		}
+		else
+		{
+			minutesBelowClientLimit = 0;
+		}
+	}
+	else
+	{
+		if (GetClientCount() < acmClientLimitValue)
+		{
+			minutesBelowClientLimit++;
+		}
+		else
+		{
+			minutesBelowClientLimit = 0;
+		}
+	}
+	if(GetConVarBool(CvarHandles[21]))
+	{
+		if (minutesBelowClientLimit >= GetConVarInt(rotation_time_limit))
+		{
+			SetMap();
+		}
+	}
+	
+	return Plugin_Continue;
+}
 
+SetMap()
+{
+
+	new acmModeValue = GetConVarInt(rotation_mode);
+	new String:nextmap[32];
+
+	switch(acmModeValue)
+	{
+		case 0:
+		{
+			if (ReadMapList(g_MapList, 
+					g_MapListSerial, 
+					"gamemanager", 
+					MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_NO_DEFAULT)
+					== INVALID_HANDLE)
+			{
+				if (g_MapListSerial == -1)
+				{
+					LogError("FATAL: Cannot load map cycle.");
+					SetFailState("Mapcycle Not Found");
+				}
+			}
+			
+			new mapCount = GetArraySize(g_MapList);
+			
+			if (g_MapPos == -1)
+			{
+				decl String:current[64];
+				GetCurrentMap(current, 64);
+				
+				for (new i = 0; i < mapCount; i++)
+				{
+					GetArrayString(g_MapList, i, nextmap, sizeof(nextmap));
+					if (strcmp(current, nextmap, false) == 0)
+					{
+						g_MapPos = i;
+						break;
+					}
+				}
+				
+				if (g_MapPos == -1)
+				{
+					g_MapPos = 0;
+				}
+			}
+			
+			g_MapPos++;
+			if (g_MapPos >= mapCount)
+			{
+				g_MapPos = 0;
+			}
+			
+			GetArrayString(g_MapList, g_MapPos, nextmap, sizeof(nextmap));
+			if (!IsMapValid(nextmap))
+			{
+				PrintToServer("Game_Manager : invalid map name ('%s') found in mapcycle.  Reloading current map...", nextmap);
+				GetCurrentMap(nextmap, sizeof(nextmap));
+			}
+			
+		}
+		
+		case 1:
+		{
+			new Handle:h_sm_nextmap = FindConVar("sm_nextmap");
+
+			if (h_sm_nextmap == INVALID_HANDLE)
+			{	
+				LogError("FATAL: Cannot find sm_nextmap cvar.");
+				SetFailState("sm_nextmap not found");
+			}
+			
+			GetConVarString(h_sm_nextmap, nextmap, sizeof(nextmap));
+			if (!IsMapValid(nextmap))
+			{
+				PrintToServer("Game_Manager : sm_nextmap ('%s') does not contain valid map name.  Reloading current map...", nextmap);
+				GetCurrentMap(nextmap, sizeof(nextmap));
+				SetConVarString(h_sm_nextmap, nextmap);
+			}
+			CloseHandle(h_sm_nextmap);
+		}
+
+		case 2:
+		{
+			GetConVarString(rotation_default_map, nextmap, sizeof(nextmap));
+
+			if (!IsMapValid(nextmap))
+			{
+				PrintToServer("Game_Manager : Game_Manager_default_map ('%s') does not contain valid map name.  Reloading current map...", nextmap);
+				GetCurrentMap(nextmap, sizeof(nextmap));
+			}
+			
+		}
+
+		default:
+		{
+			GetCurrentMap(nextmap, sizeof(nextmap));
+		}
+	}
+	new Handle:nextmapPack;
+	CreateDataTimer(5.0, ChangeMapp, nextmapPack, TIMER_FLAG_NO_MAPCHANGE);
+	WritePackString(nextmapPack, nextmap);
+	PrintToChatAll("Game_Manager : Changing map to %s.", nextmap);
+	
+}
+
+public Action:ChangeMapp(Handle:timer, Handle:mapPack)
+{
+	new String:map[32];
+	ResetPack(mapPack);
+	ReadPackString(mapPack, map, sizeof(map));
+	rotationMapChangeOccured = true;
+	ServerCommand("changelevel %s", map);
+
+}
+//#
 bool RealPlayerExist(int iExclude = 0)
 {
 	for( int client = 1; client <= MaxClients; client++ )
@@ -1366,95 +1344,9 @@ void RemoveCrashLog()
 	}
 }
 
-bool IsMapValidEx(char[] map)
-{
-	static char path[PLATFORM_MAX_PATH];
-	return FindMap(map, path, sizeof(path)) == FindMap_Found;
-}
-
-public Action TE_OnEffectDispatch(const char[] te_name, const Players[], int numClients, float delay)
-{
-	int iEffectIndex = TE_ReadNum("m_iEffectName");
-	int nHitBox = TE_ReadNum("m_nHitBox");
-	char sEffectName[64];
-
-	GetEffectName(iEffectIndex, sEffectName, sizeof(sEffectName));
-	
-	if(GetConVarBool(CvarHandles[0]) || g_cEnableNoBlood.BoolValue)
-	{
-		if(StrEqual(sEffectName, "csblood"))
-		{
-			if(GetConVarBool(CvarHandles[0]) || g_cEnableBloodSplatter.BoolValue)
-				return Plugin_Handled;
-		}
-		if(StrEqual(sEffectName, "ParticleEffect"))
-		{
-			if(GetConVarBool(CvarHandles[0]) || g_cEnableBloodSplash.BoolValue)
-			{
-				char sParticleEffectName[64];
-				GetParticleEffectName(nHitBox, sParticleEffectName, sizeof(sParticleEffectName));
-				
-				if(StrEqual(sParticleEffectName, "impact_helmet_headshot") || StrEqual(sParticleEffectName, "impact_physics_dust"))
-					return Plugin_Handled;
-			}
-		}
-	}
-
-	return Plugin_Continue;
-}
-
-public Action TE_OnWorldDecal(const char[] te_name, const Players[], int numClients, float delay)
-{
-	float vecOrigin[3];
-	int nIndex = TE_ReadNum("m_nIndex");
-	char sDecalName[64];
-
-	TE_ReadVector("m_vecOrigin", vecOrigin);
-	GetDecalName(nIndex, sDecalName, sizeof(sDecalName));
-	
-	if(GetConVarBool(CvarHandles[0]) || g_cEnableNoBlood.BoolValue)
-	{
-		if(StrContains(sDecalName, "decals/blood") == 0 && StrContains(sDecalName, "_subrect") != -1)
-			if(GetConVarBool(CvarHandles[0]) || g_cEnableBloodSplash.BoolValue)
-				return Plugin_Handled;
-	}
-
-	return Plugin_Continue;
-}
-
 stock bool IsClientValid(int client)
 {
 	if(client > 0 && client <= MaxClients && IsClientInGame(client))
 		return true;
 	return false;
-}
-
-stock int GetParticleEffectName(int index, char[] sEffectName, int maxlen)
-{
-	int table = INVALID_STRING_TABLE;
-	
-	if (table == INVALID_STRING_TABLE)
-		table = FindStringTable("ParticleEffectNames");
-	
-	return ReadStringTable(table, index, sEffectName, maxlen);
-}
-
-stock int GetEffectName(int index, char[] sEffectName, int maxlen)
-{
-	int table = INVALID_STRING_TABLE;
-	
-	if (table == INVALID_STRING_TABLE)
-		table = FindStringTable("EffectDispatch");
-	
-	return ReadStringTable(table, index, sEffectName, maxlen);
-}
-
-stock int GetDecalName(int index, char[] sDecalName, int maxlen)
-{
-	int table = INVALID_STRING_TABLE;
-	
-	if (table == INVALID_STRING_TABLE)
-		table = FindStringTable("decalprecache");
-	
-	return ReadStringTable(table, index, sDecalName, maxlen);
 }
