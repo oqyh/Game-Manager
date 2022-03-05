@@ -426,7 +426,7 @@ public Action OnHookTextMsg4(UserMsg msg_id, Handle bf, int[] players, int playe
 
 	new String:buffer[25];
 	
-	if(GetUserMessageType() == UM_Protobuf) // CSGO
+	if(GetUserMessageType() == UM_Protobuf)
     {
         PbReadString(bf, "msg_name", buffer, sizeof(buffer));
 
@@ -448,7 +448,6 @@ public void OnMapStart()
 	CreateTimer(1.0, CheckRemainingTime, INVALID_HANDLE, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 }
 
-//#
 public Action TE_OnEffectDispatch(const char[] te_name, const Players[], int numClients, float delay)
 {
 	if (!CvarEnables[0] || !g_cEnableNoSplatter.BoolValue) return Plugin_Continue;
@@ -529,7 +528,7 @@ stock int GetDecalName(int index, char[] sDecalName, int maxlen)
 
 	return ReadStringTable(table, index, sDecalName, maxlen);
 }
-//#
+
 public Action CheckRemainingTime(Handle timer)
 {
 	if (!CvarEnables[0] || !CvarEnables[17])return Plugin_Continue;
@@ -1134,7 +1133,7 @@ public Action Timer_DoHybernate(Handle timer)
 	}
 	return Plugin_Continue;
 }
-//#
+
 public Action:CheckPlayerCount(Handle:timer)
 {
 	new acmClientLimitValue = GetConVarInt(rotation_client_limit);
@@ -1294,7 +1293,7 @@ public Action:ChangeMapp(Handle:timer, Handle:mapPack)
 	ServerCommand("changelevel %s", map);
 
 }
-//#
+
 bool RealPlayerExist(int iExclude = 0)
 {
 	for( int client = 1; client <= MaxClients; client++ )
