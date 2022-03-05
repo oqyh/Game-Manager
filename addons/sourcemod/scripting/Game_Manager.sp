@@ -251,7 +251,7 @@ public void OnPluginStart()
 	rotation_client_limit = CreateConVar("sm_rotation_client_limit", "1", "Number Of Clients That Must Be Connected To Disable Map Rotation Feature (Need To Enable sm_rotation_enable)", _, true, 0.0, false, 0.0);
 	rotation_include_bots = CreateConVar("sm_rotation_include_bots", "0", "Include Bots In The Client Count (Remember, Sourcetv Counts As A Bot) (Need To Enable sm_rotation_enable)", _, true, 0.0, true, 1.0);
 	rotation_time_limit = CreateConVar("sm_rotation_time_limit", "5", "(in min.) Pass While The Client Limit Has Not Been Reached For Rotation Feature To Occur (Need To Enable sm_rotation_enable)", _, true, 0.0, false, 0.0);
-	rotation_mode = CreateConVar("sm_rotation_mode", "0", "Method (Need To Enable sm_rotation_enable)  || 0= Custom Maplist (Create New Line [gamemanager] + path In Sourcemod/configs/maplists.cfg) || 1= Sm_nextmap Or Mapcycle (Requires Nextmap.smx) || 2= Load Map In sm_rotation_default_map Cvar || 3= Reload Current Map", _, true, 0.0, true, 3.0);
+	rotation_mode = CreateConVar("sm_rotation_mode", "0", "(Need To Enable sm_rotation_enable) || 0= Custom Maplist (Create New Line [gamemanager] + path In Sourcemod/configs/maplists.cfg) || 1= Sm_nextmap Or Mapcycle (Requires Nextmap.smx) || 2= Load Map In sm_rotation_default_map Cvar || 3= Reload Current Map", _, true, 0.0, true, 3.0);
 	rotation_default_map = CreateConVar("sm_rotation_default_map", "", "Map To Load If (sm_rotation_mode Is Set To 2) (Need To Enable sm_rotation_enable)");
 	rotation_config_to_exec = CreateConVar("sm_rotation_config_to_exec", "", "Config To Exec When An Rotation Feature Occurs, If Desired.  Executes After The Map Loads And Server.cfg And Sourcemod Plugin Configs Are Exec'd (Need To Enable sm_rotation_enable)");
 	
