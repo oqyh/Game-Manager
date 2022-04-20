@@ -5,7 +5,7 @@
 #define PluginDesc "Game Manager ( Hide radar, money, messages, ping, and more )"
 
 #define PluginAuthor "Gold_KingZ + MrQout"
-#define PluginVersion "1.0.3"
+#define PluginVersion "1.0.4"
 
 #define PluginSite "https://steamcommunity.com/id/oQYh"
 
@@ -47,7 +47,9 @@ ConVar g_ConVarDelay;
 ConVar g_ConVarHibernate;
 ConVar g_cEnableNoBlood;
 ConVar g_cEnableNoSplatter;
-
+ConVar g_automute;
+ConVar g_footstepsound;
+ConVar g_jumplandsound;
 
 bool g_bCvarEnabled;
 
@@ -221,10 +223,9 @@ public void OnPluginStart()
 	HookConVarChange((CvarHandles[1] = CreateConVar("sm_hide_radar"		     , DefaultValue, "Hide Radar (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"							  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[2] = CreateConVar("sm_hide_moneyhud"		     , DefaultValue, "Hide Money Hud (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"							  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[3] = CreateConVar("sm_hide_killfeed"		     , DefaultValue, "Hide Kill Feed (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[4] = CreateConVar("sm_block_radio_voice_agents"		     , DefaultValue, "Block All Radio Voice Agents (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"				  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[4] = CreateConVar("sm_block_radio_voice_agents"		     , DefaultValue, "Block All Radio Voice Agents + Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"				  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[5] = CreateConVar("sm_block_radio_voice_grenades" , DefaultValue, "Block All Radio Voice Grenades Throw (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"				  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[6] = CreateConVar("sm_block_wheel"	 			 , DefaultValue, "Block All Wheel + Ping (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"	  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[7] = CreateConVar("sm_block_all_radio_messages "		 , DefaultValue, "Hide All Radio Messages  (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[8] = CreateConVar("sm_block_cheats"			 , DefaultValue, "Make sv_cheats 0 Automatically   (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[9]  = CreateConVar("sm_block_connect_message"	 , DefaultValue, "Hide Connect Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"	      , _, true, 0.0, true, 1.0)), ConVarChanged);
 	HookConVarChange((CvarHandles[10] = CreateConVar("sm_block_disconnect_message", DefaultValue, "Hide Disconnect Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"	  , _, true, 0.0, true, 1.0)), ConVarChanged);
@@ -243,6 +244,9 @@ public void OnPluginStart()
 	g_Cvar_BotQuota = CreateConVar("sm_block_bots", DefaultValue, "Permanently Remove bots (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No");
 	g_cEnableNoBlood = CreateConVar("sm_hide_blood", DefaultValue, "Remove Blood (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_cEnableNoSplatter  = CreateConVar("sm_hide_splatter", DefaultValue, "Remove Splatter Effect (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_automute	= CreateConVar("sm_block_auto_mute", DefaultValue, "Remove Auto Communication Penalties (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_footstepsound	= CreateConVar("sm_block_footsteps_sound", DefaultValue, "Block Footsteps Sounds (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_jumplandsound	= CreateConVar("sm_block_jumpland_sound", DefaultValue, "Block Jump Land Sounds (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	
 	( g_ConVarEnable 	= CreateConVar("sm_restart_empty_enable", 					"0", 	".::[Restart Server When Last Player Disconnect Feature]::. || 1= Yes || 0= No ", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
 	( g_ConVarMethod 	= CreateConVar("sm_restart_empty_method", 					"2", 	"When server is empty Which Method Do You Like (Need To Enable sm_restart_empty_enable) || 1= Restart || 2= Crash If Method 1 Is Not work", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
@@ -756,7 +760,7 @@ public Action Command_Ping(int iClient, char[] command, int args)
 
 public Action OnRadioText(UserMsg msg_id, Protobuf bf, const int[] players, int playersNum, bool reliable, bool init)
 {
-	return (CvarEnables[0] &&  CvarEnables[7]) ?
+	return (CvarEnables[0] &&  CvarEnables[4]) ?
 		Plugin_Handled : 
 		Plugin_Continue;
 }
@@ -822,6 +826,35 @@ void LoadCfg()
 {
 	
 	AutoExecConfig(true, CFG_NAME);
+	
+	
+	if (!CvarEnables[0] || !g_automute.BoolValue)
+	{
+		ServerCommand("sm_cvar sv_mute_players_with_social_penalties 1");
+	}
+	else
+	{
+		ServerCommand("sm_cvar sv_mute_players_with_social_penalties 0");
+	}
+	
+	if (!CvarEnables[0] || !g_footstepsound.BoolValue)
+	{
+		ServerCommand("sm_cvar sv_footsteps 1");
+	}
+	else
+	{
+		ServerCommand("sm_cvar sv_footsteps 0");
+	}
+	
+	if (!CvarEnables[0] || !g_jumplandsound.BoolValue)
+	{
+		ServerCommand("sm_cvar sv_min_jump_landing_sound 260");
+	}
+	else
+	{
+		ServerCommand("sm_cvar sv_min_jump_landing_sound 999999");
+	}
+	
 }
 
 bool IsValidPlayer(int iClient, bool team = true, bool alive = false)
