@@ -5,18 +5,7 @@
 #define PluginDesc "Game Manager ( Hide radar, money, messages, ping, and more )"
 
 #define PluginAuthor "Gold_KingZ + MrQout"
-#define PluginVersion "1.0.4"
-
-#define PluginSite "https://steamcommunity.com/id/oQYh"
-
-#define CFG_NAME "Game_Manager"
-
-#define DefaultValue "1"
-#define CVAR_FLAGS			FCVAR_NOTIFY
-#define TEAM_NONE 0
-#define TEAM_SPEC 1
-#define TEAM_T 2
-#define TEAM_CT 3
+#define PluginVersion "1.0.5"
 
 #include <sourcemod>
 #include <cstrike>
@@ -25,21 +14,20 @@
 #include <sdkhooks>
 #include <sdktools_functions>
 
-new Handle:rotation_client_limit = INVALID_HANDLE;
-new Handle:rotation_include_bots = INVALID_HANDLE;
-new Handle:rotation_time_limit = INVALID_HANDLE;
-new Handle:rotation_mode = INVALID_HANDLE;
-new Handle:rotation_default_map = INVALID_HANDLE;
-new Handle:rotation_config_to_exec = INVALID_HANDLE;
+#define PluginSite "https://steamcommunity.com/id/oQYh"
 
-new Handle:g_MapList = INVALID_HANDLE;
+#define CFG_NAME "Game_Manager"
+
+#define DefaultValue "1"
+#define TEAM_NONE 0
+#define TEAM_SPEC 1
+#define TEAM_T 2
+#define TEAM_CT 3
 
 new g_MapPos;
 new g_MapListSerial;
 new minutesBelowClientLimit;
 new bool:rotationMapChangeOccured;
-
-
 
 ConVar g_ConVarEnable;
 ConVar g_ConVarMethod;
@@ -50,12 +38,18 @@ ConVar g_cEnableNoSplatter;
 ConVar g_automute;
 ConVar g_footstepsound;
 ConVar g_jumplandsound;
+ConVar Cvar_ListX;
+ConVar Cvar_ListY;
+ConVar Cvar_ListColor;
+ConVar g_falldamage;
+ConVar g_knifesound;
 
 bool g_bCvarEnabled;
+bool g_phitted[MAXPLAYERS];
 
 int g_iCvarMethod;
 int g_iHybernateInitial;
-
+int g_iListColor[4];
 
 
 char g_sLogPath[PLATFORM_MAX_PATH];
@@ -63,10 +57,11 @@ char CfgFile[PLATFORM_MAX_PATH];
 
 
 float g_fCvarDelay;
-Handle h_bEnable;
+float g_ListX;
+float g_ListY;
+
+Handle g_balance;
 Handle hPluginMe;
-
-
 new Handle: g_Cvar_BotDelayEnable = INVALID_HANDLE;
 new Handle:g_Cvar_BotQuota = INVALID_HANDLE;
 new Handle:g_Cvar_BotDelay;
@@ -80,6 +75,13 @@ new g_BotCTcount = 0;
 new g_botQuota = 0;
 new g_botDelay = 1;
 new bool:g_hookenabled = false;
+new Handle:rotation_client_limit = INVALID_HANDLE;
+new Handle:rotation_include_bots = INVALID_HANDLE;
+new Handle:rotation_time_limit = INVALID_HANDLE;
+new Handle:rotation_mode = INVALID_HANDLE;
+new Handle:rotation_default_map = INVALID_HANDLE;
+new Handle:rotation_config_to_exec = INVALID_HANDLE;
+new Handle:g_MapList = INVALID_HANDLE;
 
 public Plugin myinfo = 
 {
@@ -211,7 +213,7 @@ public void OnPluginStart()
 		return;
 	}
 	
-	
+	LoadTranslations( "Game_Manager.phrases" );
 	Format(CfgFile, sizeof(CfgFile), "sourcemod/%s.cfg", CFG_NAME);
 	
 	
@@ -219,45 +221,66 @@ public void OnPluginStart()
 		CvarEnables[i] = view_as<bool>(StringToInt(DefaultValue));
 	
 	
-	HookConVarChange((CvarHandles[0] = CreateConVar("sm_enable_hide_and_block"		  	 , DefaultValue, ".::[Enable Hide And Block Feature]::. || 1= Yes || 0= No"						  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[1] = CreateConVar("sm_hide_radar"		     , DefaultValue, "Hide Radar (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"							  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[2] = CreateConVar("sm_hide_moneyhud"		     , DefaultValue, "Hide Money Hud (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"							  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[3] = CreateConVar("sm_hide_killfeed"		     , DefaultValue, "Hide Kill Feed (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[4] = CreateConVar("sm_block_radio_voice_agents"		     , DefaultValue, "Block All Radio Voice Agents + Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"				  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[5] = CreateConVar("sm_block_radio_voice_grenades" , DefaultValue, "Block All Radio Voice Grenades Throw (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"				  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[6] = CreateConVar("sm_block_wheel"	 			 , DefaultValue, "Block All Wheel + Ping (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"	  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[8] = CreateConVar("sm_block_cheats"			 , DefaultValue, "Make sv_cheats 0 Automatically   (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[9]  = CreateConVar("sm_block_connect_message"	 , DefaultValue, "Hide Connect Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"	      , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[10] = CreateConVar("sm_block_disconnect_message", DefaultValue, "Hide Disconnect Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"	  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[11] = CreateConVar("sm_block_jointeam_message"	 , DefaultValue, "Hide Join Team Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[12] = CreateConVar("sm_block_teamchange_message", DefaultValue, "Hide Team Change Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[13] = CreateConVar("sm_block_cvar_message" , DefaultValue, "Hide Cvar Change Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[14] = CreateConVar("sm_block_hidemoney_message" , DefaultValue, "Hide All Money Team/Player Award Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[15] = CreateConVar("sm_block_savedby_message" , DefaultValue, "Hide Player Saved You By Player Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[16] = CreateConVar("sm_block_teammateattack_message" , DefaultValue, "Hide Team Mate Attack Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[17] = CreateConVar("sm_forceendmap" , DefaultValue, "Force End Map With Command mp_timelimit (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[18] = CreateConVar("sm_block_chicken" , DefaultValue, "Remove Chickens (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[19] = CreateConVar("sm_show_timeleft_hud" , DefaultValue, "Show Timeleft HUD (mp_timelimit) At Bottom  (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[20] = CreateConVar("sm_block_changename_message" , DefaultValue, "Hide Change Name Messages (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-	HookConVarChange((CvarHandles[21] = CreateConVar("sm_rotation_enable" , "0", ".::[Map Rotation Feature]::.  || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
-	h_bEnable = CreateConVar("sm_auto_balance_every_round", DefaultValue, "Auto Balance Every Round (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
-	g_Cvar_BotQuota = CreateConVar("sm_block_bots", DefaultValue, "Permanently Remove bots (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No");
-	g_cEnableNoBlood = CreateConVar("sm_hide_blood", DefaultValue, "Remove Blood (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
-	g_cEnableNoSplatter  = CreateConVar("sm_hide_splatter", DefaultValue, "Remove Splatter Effect (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
-	g_automute	= CreateConVar("sm_block_auto_mute", DefaultValue, "Remove Auto Communication Penalties (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
-	g_footstepsound	= CreateConVar("sm_block_footsteps_sound", DefaultValue, "Block Footsteps Sounds (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
-	g_jumplandsound	= CreateConVar("sm_block_jumpland_sound", DefaultValue, "Block Jump Land Sounds (Need To Enable sm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	HookConVarChange((CvarHandles[0] = CreateConVar("gm_enable_hide_and_block"		  	 , DefaultValue, ".::[Enable Hide And Block Feature]::. || 1= Yes || 0= No"						  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[1] = CreateConVar("gm_hide_radar"		     , DefaultValue, "Hide Radar (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No"							  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[2] = CreateConVar("gm_hide_moneyhud"		     , DefaultValue, "Hide Money Hud (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No"							  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[3] = CreateConVar("gm_hide_killfeed"		     , DefaultValue, "Hide Kill Feed (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[4] = CreateConVar("gm_block_radio_voice_agents"		     , DefaultValue, "Block All Radio Voice Agents + Messages (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No"				  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[5] = CreateConVar("gm_block_radio_voice_grenades" , DefaultValue, "Block All Radio Voice Grenades Throw (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No"				  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[6] = CreateConVar("gm_block_wheel"	 			 , DefaultValue, "Block All Wheel + Ping (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No"	  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[7] = CreateConVar("gm_block_clantag"	 			 , DefaultValue, "Permanently Block Both Animated Or Normal ClanTags (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No"	  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[8] = CreateConVar("gm_block_cheats"			 , DefaultValue, "Make sv_cheats 0 Automatically   (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[9]  = CreateConVar("gm_block_connect_message"	 , DefaultValue, "Hide Connect Messages (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No"	      , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[10] = CreateConVar("gm_block_disconnect_message", DefaultValue, "Hide Disconnect Messages (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No"	  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[11] = CreateConVar("gm_block_jointeam_message"	 , DefaultValue, "Hide Join Team Messages (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[12] = CreateConVar("gm_block_teamchange_message", DefaultValue, "Hide Team Change Messages (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[13] = CreateConVar("gm_block_cvar_message" , DefaultValue, "Hide Cvar Change Messages (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No"			  , _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[14] = CreateConVar("gm_block_hidemoney_message" , DefaultValue, "Hide All Money Team/Player Award Messages (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[15] = CreateConVar("gm_block_savedby_message" , DefaultValue, "Hide Player Saved You By Player Messages (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[16] = CreateConVar("gm_block_teammateattack_message" , DefaultValue, "Hide Team Mate Attack Messages (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[17] = CreateConVar("gm_forceendmap" , DefaultValue, "Force End Map With Command mp_timelimit (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[18] = CreateConVar("gm_block_chicken" , DefaultValue, "Permanently Remove Chickens (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[19] = CreateConVar("gm_show_timeleft_hud" , DefaultValue, "Show Timeleft HUD (mp_timelimit) At Bottom  (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[20] = CreateConVar("gm_block_changename_message" , DefaultValue, "Hide Change Name Messages (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
+	HookConVarChange((CvarHandles[21] = CreateConVar("gm_rotation_enable" , DefaultValue, ".::[Map Rotation Feature]::.  || 1= Yes || 0= No", _, true, 0.0, true, 1.0)), ConVarChanged);
+	g_balance = CreateConVar("gm_auto_balance_every_round", DefaultValue, "Auto Balance Every Round (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_Cvar_BotQuota = CreateConVar("gm_block_bots", DefaultValue, "Permanently Remove bots (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No");
+	g_cEnableNoBlood = CreateConVar("gm_hide_blood", DefaultValue, "Hide Blood (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_cEnableNoSplatter  = CreateConVar("gm_hide_splatter", DefaultValue, "Hide Splatter Effect (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_automute	= CreateConVar("gm_block_auto_mute", DefaultValue, "Remove Auto Communication Penalties (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_footstepsound	= CreateConVar("gm_block_footsteps_sound", DefaultValue, "Block Footsteps Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_jumplandsound	= CreateConVar("gm_block_jumpland_sound", DefaultValue, "Block Jump Land Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_falldamage = CreateConVar("gm_block_falldamage", DefaultValue, "Disable Fall Damage (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_knifesound = CreateConVar("gm_block_zerodamge_knife", DefaultValue, "Block Knife Sound If Its Zero Damage (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	
-	( g_ConVarEnable 	= CreateConVar("sm_restart_empty_enable", 					"0", 	".::[Restart Server When Last Player Disconnect Feature]::. || 1= Yes || 0= No ", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
-	( g_ConVarMethod 	= CreateConVar("sm_restart_empty_method", 					"2", 	"When server is empty Which Method Do You Like (Need To Enable sm_restart_empty_enable) || 1= Restart || 2= Crash If Method 1 Is Not work", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
-	( g_ConVarDelay 	= CreateConVar("sm_restart_empty_delay", 					"60.0", 	"(in sec.) To Wait To Start sm_restart_empty_method (Need To Enable sm_restart_empty_enable)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
-		
-	rotation_client_limit = CreateConVar("sm_rotation_client_limit", "1", "Number Of Clients That Must Be Connected To Disable Map Rotation Feature (Need To Enable sm_rotation_enable)", _, true, 0.0, false, 0.0);
-	rotation_include_bots = CreateConVar("sm_rotation_include_bots", "0", "Include Bots In The Client Count (Remember, Sourcetv Counts As A Bot) (Need To Enable sm_rotation_enable)", _, true, 0.0, true, 1.0);
-	rotation_time_limit = CreateConVar("sm_rotation_time_limit", "5", "(in min.) Pass While The Client Limit Has Not Been Reached For Rotation Feature To Occur (Need To Enable sm_rotation_enable)", _, true, 0.0, false, 0.0);
-	rotation_mode = CreateConVar("sm_rotation_mode", "0", "(Need To Enable sm_rotation_enable) || 0= Custom Maplist (Create New Line [gamemanager] + path In Sourcemod/configs/maplists.cfg) || 1= Sm_nextmap Or Mapcycle (Requires Nextmap.smx) || 2= Load Map In sm_rotation_default_map Cvar || 3= Reload Current Map", _, true, 0.0, true, 3.0);
-	rotation_default_map = CreateConVar("sm_rotation_default_map", "", "Map To Load If (sm_rotation_mode Is Set To 2) (Need To Enable sm_rotation_enable)");
-	rotation_config_to_exec = CreateConVar("sm_rotation_config_to_exec", "", "Config To Exec When An Rotation Feature Occurs, If Desired.  Executes After The Map Loads And Server.cfg And Sourcemod Plugin Configs Are Exec'd (Need To Enable sm_rotation_enable)");
+	( g_ConVarEnable 	= CreateConVar("gm_restart_empty_enable", 					"0", 	".::[Restart Server When Last Player Disconnect Feature]::. || 1= Yes || 0= No ")).AddChangeHook(OnCvarChanged);
+	( g_ConVarMethod 	= CreateConVar("gm_restart_empty_method", 					"2", 	"When server is empty Which Method Do You Like (Need To Enable gm_restart_empty_enable) || 1= Restart || 2= Crash If Method 1 Is Not work")).AddChangeHook(OnCvarChanged);
+	( g_ConVarDelay 	= CreateConVar("gm_restart_empty_delay", 					"60.0", 	"(in sec.) To Wait To Start gm_restart_empty_method (Need To Enable gm_restart_empty_enable)")).AddChangeHook(OnCvarChanged);
+	
+	rotation_client_limit = CreateConVar("gm_rotation_client_limit", "1", "Number Of Clients That Must Be Connected To Disable Map Rotation Feature (Need To Enable gm_rotation_enable)", _, true, 0.0, false, 0.0);
+	rotation_include_bots = CreateConVar("gm_rotation_include_bots", DefaultValue, "Include Bots In The Client Count (Remember, Sourcetv Counts As A Bot) (Need To Enable gm_rotation_enable)", _, true, 0.0, true, 1.0);
+	rotation_time_limit = CreateConVar("gm_rotation_time_limit", "5", "(in min.) Pass While The Client Limit Has Not Been Reached For Rotation Feature To Occur (Need To Enable gm_rotation_enable)", _, true, 0.0, false, 0.0);
+	rotation_mode = CreateConVar("gm_rotation_mode", "0", "(Need To Enable gm_rotation_enable) || 0= Custom Maplist (Create New Line [gamemanager] + path In Sourcemod/configs/maplists.cfg) || 1= Sm_nextmap Or Mapcycle (Requires Nextmap.smx) || 2= Load Map In gm_rotation_default_map Cvar || 3= Reload Current Map", _, true, 0.0, true, 3.0);
+	rotation_default_map = CreateConVar("gm_rotation_default_map", "", "Map To Load If (gm_rotation_mode Is Set To 2) (Need To Enable gm_rotation_enable)");
+	rotation_config_to_exec = CreateConVar("gm_rotation_config_to_exec", "", "Config To Exec When An Rotation Feature Occurs, If Desired.  Executes After The Map Loads And Server.cfg And Sourcemod Plugin Configs Are Exec'd (Need To Enable gm_rotation_enable)");
+
+	Cvar_ListX				= CreateConVar("gm_hud_xaxis", "0.00", "X-Axis Location From 0 To 1.0 Check https://github.com/oqyh/Game-Manager/blob/main/images/hud%20postions.png For Help");
+	Cvar_ListY				= CreateConVar("gm_hud_yaxis", "0.40", "Y-Axis Location From 0 To 1.0 Check https://github.com/oqyh/Game-Manager/blob/main/images/hud%20postions.png For Help");
+	Cvar_ListColor			= CreateConVar("gm_hud_colors", "255 0 189 0.8", "Hud color. [R G B A] Pick Colors https://rgbacolorpicker.com/");
+
+	g_ListX				= GetConVarFloat(Cvar_ListX);
+	g_ListY				= GetConVarFloat(Cvar_ListY);
+
+	AddNormalSoundHook(NSound_CallBack);
+	HookEvent("player_hurt", PlayerHurt_Event, EventHookMode_Pre);
+	
+	HookConVarChange(Cvar_ListX, OnConVarChange);	
+	HookConVarChange(Cvar_ListY, OnConVarChange);	
+	HookConVarChange(Cvar_ListColor, OnConVarChange);
+	
+	char buffer[16];
+	GetConVarString(Cvar_ListColor, buffer, sizeof(buffer));
+	StrToRGBA(buffer);
 	
 	g_MapList = CreateArray(32);
 
@@ -301,7 +324,7 @@ public void OnPluginStart()
 	
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
 	
-	
+
 	HookEvent("player_spawn", OnPlayerSpawn);
 	HookEvent("player_blind", OnPlayerBlind);
 	HookEvent("round_prestart", Event_PreRoundStart);
@@ -358,9 +381,71 @@ public void OnPluginStart()
 	
 	
 	
-	RegConsoleCmd("sm_game_manager_reload", Command_Reload, "Reload Config");
+	RegConsoleCmd("gm_game_manager_reload", Command_Reload, "Reload Config");
 }
 
+public void OnClientPutInServer(int client)
+{
+	if (!CvarEnables[0])
+	g_phitted[client] = false;
+}
+
+public Action PlayerHurt_Event(Event event, const char[] name, bool dontBroadcast)
+{
+	if (!CvarEnables[0])return Plugin_Continue;
+	int attacker = GetClientOfUserId(event.GetInt("attacker"));
+
+	g_phitted[attacker] = true;
+
+	return Plugin_Continue;
+}
+
+public Action NSound_CallBack(int clients[MAXPLAYERS], int& numClients, char sample[PLATFORM_MAX_PATH], int& entity, int& channel, float& volume, int& level, int& pitch, int& flags, char soundEntry[PLATFORM_MAX_PATH], int& seed)
+{
+	if (!CvarEnables[0])return Plugin_Continue;
+	char classname[32];
+	GetEdictClassname(entity, classname, sizeof(classname));
+
+	if (StrContains(sample, "flesh") != -1 || StrContains(sample, "kevlar") != -1)
+	{
+		if (GetConVarBool(g_knifesound))
+		{
+			numClients = 0;
+
+			return Plugin_Changed;
+		}
+	}
+
+	if (StrContains(classname, "knife") != -1)
+	{
+		int client = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
+
+		if (!IsValidClient(client, false))
+			return Plugin_Continue;
+
+		if (g_phitted[client])
+		{
+			g_phitted[client] = false;
+			return Plugin_Continue;
+		}
+
+		g_phitted[client] = false;
+
+		if (GetConVarBool(g_knifesound))
+		{
+			numClients = 0;
+
+			return Plugin_Changed;
+		}
+	}
+
+	return Plugin_Continue;
+}
+
+stock bool IsValidClient(int client, bool botcheck = true)
+{
+	return (1 <= client && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client) && (botcheck ? !IsFakeClient(client) : true));
+}
 
 public void OnPluginEnd()
 {
@@ -447,6 +532,15 @@ public void OnMapStart()
 	if (g_delayenable && g_hookenabled == false) {
 		g_botDelay = GetConVarInt(g_Cvar_BotDelay);
 		bot_delay_timer = CreateTimer(g_botDelay * 1.0, Timer_BotDelay);
+	}
+
+	if (!CvarEnables[0] || !g_falldamage.BoolValue)
+	{
+		ServerCommand("sm_cvar sv_falldamage_scale 1");
+	}
+	else
+	{
+		ServerCommand("sm_cvar sv_falldamage_scale 0");
 	}
 	
 	CreateTimer(1.0, CheckRemainingTime, INVALID_HANDLE, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
@@ -548,17 +642,17 @@ public Action CheckRemainingTime(Handle timer)
 		
 		switch(timeleft)
 		{
-			case 1800: 	CPrintToChatAll("{lightred}Timeleft: 30 minutes");
-			case 1200: 	CPrintToChatAll("{lightred}Timeleft: 20 minutes");
-			case 600: 	CPrintToChatAll("{lightred}Timeleft: 10 minutes");
-			case 300: 	CPrintToChatAll("{lightred}Timeleft: 5 minutes");
-			case 120: 	CPrintToChatAll("{lightred}Timeleft: 2 minutes");
-			case 60: 	CPrintToChatAll("{lightred}Timeleft: 60 seconds");
-			case 30: 	CPrintToChatAll("{lightred}Timeleft: 30 seconds");
-			case 15: 	CPrintToChatAll("{lightred}Timeleft: 15 seconds");
-			case -1: 	CPrintToChatAll("{lightred}Timeleft: 3..");
-			case -2: 	CPrintToChatAll("{lightred}Timeleft: 2..");
-			case -3: 	CPrintToChatAll("{lightred}Timeleft: 1..");
+			case 1800: 	CPrintToChatAll("%t","min30");
+			case 1200: 	CPrintToChatAll("%t","min20");
+			case 600: 	CPrintToChatAll("%t","min10");
+			case 300: 	CPrintToChatAll("%t","min5");
+			case 120: 	CPrintToChatAll("%t","min2");
+			case 60: 	CPrintToChatAll("%t","60sec");
+			case 30: 	CPrintToChatAll("%t","30sec");
+			case 15: 	CPrintToChatAll("%t","15sec");
+			case -1: 		CPrintToChatAll("%t","3sec");
+			case -2: 	CPrintToChatAll("%t","2sec");
+			case -3: 	CPrintToChatAll("%t","1sec");
 		}
 		
 		if(timeleft < -3)
@@ -644,8 +738,8 @@ public Action Timeleft(Handle timer)
 			if(IsClientInGame(i) && !IsFakeClient(i))
 			{
 				char message[60];
-				Format(message, sizeof(message), "Timeleft: %s", sTime);
-				SetHudTextParams(-1.0, 1.00, 1.0, 4, 180, 255, 255, 0, 0.00, 0.00, 0.00);
+				Format(message, sizeof(message), "%t %s", "timerhud", sTime);
+				SetHudTextParams(g_ListX, g_ListY, 1.0, g_iListColor[0], g_iListColor[1], g_iListColor[2], g_iListColor[3], 0, 0.00, 0.00, 0.00);
 				ShowHudText(i, -1, message);
 			}
 		}
@@ -782,6 +876,63 @@ public Action OnRadio(int client, const char[] command, int args)
 	return ((CvarEnables[0] && CvarEnables[4]) ? Plugin_Handled : Plugin_Continue);
 }
 
+public void OnConVarChange(Handle convar, const char[] oldValue, const char[] newValue)
+{
+	if(convar == Cvar_ListX)
+	{
+		g_ListX = StringToFloat(newValue);
+		if( (g_ListX > 1.0 || g_ListX < 0) && g_ListX != -1.0)
+		{
+			PrintToServer("[Speclist] Error - Invalid X coordinate value: %f", g_ListX);
+			g_ListX = 0.17;
+		}
+	}
+	else if(convar == Cvar_ListY)
+	{
+		g_ListY = StringToFloat(newValue);
+		if( (g_ListY > 1.0 || g_ListY < 0) && g_ListY != -1.0)
+		{
+			PrintToServer("[Speclist] Error - Invalid Y coordinate value: %f", g_ListY);
+			g_ListY = 0.01;
+		}
+	}
+	else if(convar == Cvar_ListColor)
+		StrToRGBA(newValue);
+}
+
+public Action OnClientCommandKeyValues(int client, KeyValues kv)
+{
+	if (!CvarEnables[0] || !CvarEnables[7])return Plugin_Continue;
+	char sSection[16];
+	if (kv.GetSectionName(sSection, sizeof(sSection)) && StrEqual(sSection, "ClanTagChanged"))
+		return Plugin_Handled;
+
+	return Plugin_Continue;
+}
+
+void StrToRGBA(const char[] Color)
+{
+	char buffer[4][16];
+
+	if(ExplodeString(Color, " ", buffer, sizeof(buffer), sizeof(buffer[])) > 3)
+	{
+		for(int i = 0; i < 4; i++)
+		{
+			g_iListColor[i] = StringToInt(buffer[i], 10);
+			if(g_iListColor[i] > 255 || g_iListColor[i] < 0)
+			{
+				g_iListColor[i] = 255;
+				PrintToServer("[Speclist] Error - RGBA[%d]=%d is not in the range 0-255", i, g_iListColor[i]);
+			}
+		}
+	}
+	else
+	{
+		g_iListColor = {255, 255, 255, 150};
+		PrintToServer("[Speclist] Error - Invalid color format: %s", Color);
+	}
+}
+
 public Action Command_Reload(int client, int args)
 {
 	if ((GetUserFlagBits(client) & ADMFLAG_ROOT))
@@ -827,7 +978,6 @@ void LoadCfg()
 	
 	AutoExecConfig(true, CFG_NAME);
 	
-	
 	if (!CvarEnables[0] || !g_automute.BoolValue)
 	{
 		ServerCommand("sm_cvar sv_mute_players_with_social_penalties 1");
@@ -872,7 +1022,7 @@ public Action Event_PreRoundStart(Handle event, const char[] name, bool dontBroa
     int T_Count = GetTeamClientCount(CS_TEAM_T);
     int CT_Count = GetTeamClientCount(CS_TEAM_CT);
     
-    if(!CvarEnables[0] || !GetConVarBool(h_bEnable) || T_Count == CT_Count || T_Count + 1 == CT_Count || CT_Count + 1 == T_Count)
+    if(!CvarEnables[0] || !GetConVarBool(g_balance) || T_Count == CT_Count || T_Count + 1 == CT_Count || CT_Count + 1 == T_Count)
         return Plugin_Continue;
         
     while(T_Count > CT_Count && T_Count != CT_Count + 1)
