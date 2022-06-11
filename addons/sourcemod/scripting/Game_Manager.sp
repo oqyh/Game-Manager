@@ -5,7 +5,7 @@
 #define PluginDesc "Game Manager ( Hide radar, money, messages, ping, and more )"
 
 #define PluginAuthor "Gold_KingZ + MrQout"
-#define PluginVersion "1.0.5"
+#define PluginVersion "1.0.5.Fix"
 
 #include <sourcemod>
 #include <cstrike>
@@ -97,7 +97,6 @@ public Plugin myinfo =
 
 
 Handle
-	HRadar				 = null,
 	MoneyHud 	 		 = null,
 	Ignorenade 	 		 = null,
 	Cheats 				 = null;
@@ -254,11 +253,11 @@ public void OnPluginStart()
 	g_knifesound = CreateConVar("gm_block_zerodamge_knife", DefaultValue, "Block Knife Sound If Its Zero Damage (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	
 	( g_ConVarEnable 	= CreateConVar("gm_restart_empty_enable", 					"0", 	".::[Restart Server When Last Player Disconnect Feature]::. || 1= Yes || 0= No ")).AddChangeHook(OnCvarChanged);
-	( g_ConVarMethod 	= CreateConVar("gm_restart_empty_method", 					"2", 	"When server is empty Which Method Do You Like (Need To Enable gm_restart_empty_enable) || 1= Restart || 2= Crash If Method 1 Is Not work")).AddChangeHook(OnCvarChanged);
-	( g_ConVarDelay 	= CreateConVar("gm_restart_empty_delay", 					"60.0", 	"(in sec.) To Wait To Start gm_restart_empty_method (Need To Enable gm_restart_empty_enable)")).AddChangeHook(OnCvarChanged);
+	( g_ConVarMethod 	= CreateConVar("gm_restart_empty_method", 					"1", 	"When server is empty Which Method Do You Like (Need To Enable gm_restart_empty_enable) || 1= Restart || 2= Crash If Method 1 Is Not work")).AddChangeHook(OnCvarChanged);
+	( g_ConVarDelay 	= CreateConVar("gm_restart_empty_delay", 					"900.0", 	"(in sec.) To Wait To Start gm_restart_empty_method (Need To Enable gm_restart_empty_enable)")).AddChangeHook(OnCvarChanged);
 	
 	rotation_client_limit = CreateConVar("gm_rotation_client_limit", "1", "Number Of Clients That Must Be Connected To Disable Map Rotation Feature (Need To Enable gm_rotation_enable)", _, true, 0.0, false, 0.0);
-	rotation_include_bots = CreateConVar("gm_rotation_include_bots", DefaultValue, "Include Bots In The Client Count (Remember, Sourcetv Counts As A Bot) (Need To Enable gm_rotation_enable)", _, true, 0.0, true, 1.0);
+	rotation_include_bots = CreateConVar("gm_rotation_include_bots", "0", "Include Bots In The Client Count (Remember, Sourcetv Counts As A Bot) (Need To Enable gm_rotation_enable)", _, true, 0.0, true, 1.0);
 	rotation_time_limit = CreateConVar("gm_rotation_time_limit", "5", "(in min.) Pass While The Client Limit Has Not Been Reached For Rotation Feature To Occur (Need To Enable gm_rotation_enable)", _, true, 0.0, false, 0.0);
 	rotation_mode = CreateConVar("gm_rotation_mode", "0", "(Need To Enable gm_rotation_enable) || 0= Custom Maplist (Create New Line [gamemanager] + path In Sourcemod/configs/maplists.cfg) || 1= Sm_nextmap Or Mapcycle (Requires Nextmap.smx) || 2= Load Map In gm_rotation_default_map Cvar || 3= Reload Current Map", _, true, 0.0, true, 3.0);
 	rotation_default_map = CreateConVar("gm_rotation_default_map", "", "Map To Load If (gm_rotation_mode Is Set To 2) (Need To Enable gm_rotation_enable)");
@@ -313,7 +312,6 @@ public void OnPluginStart()
 	
 
 	
-	HRadar 	   = FindConVar("sv_disable_radar");
 	MoneyHud   = FindConVar("mp_maxmoney");
 	Ignorenade = FindConVar("sv_ignoregrenaderadio");
 	Cheats 	   = FindConVar("sv_cheats");
@@ -338,11 +336,6 @@ public void OnPluginStart()
 	AddTempEntHook("World Decal", TE_OnWorldDecal);
 	AddTempEntHook("Impact", TE_OnWorldDecal);
 	
-	if (HRadar != null)
-	{
-		SetConVarBool(HRadar, true, true, false);
-		HookConVarChange(HRadar, CHRadar);
-	}
 	
 	
 	if (MoneyHud != null)
@@ -793,26 +786,26 @@ public Action OnPlayerSpawn(Handle hEvent, const char[] name, bool dontBroadcast
 	new userid = GetEventInt(hEvent, "userid");
 	new client = GetClientOfUserId(userid);
 	
-	if (CvarEnables[0] && CvarEnables[1])
+	if (!CvarEnables[0] || !CvarEnables[1])return Plugin_Continue;
+	
+	int iClient = GetClientOfUserId(GetEventInt(hEvent, "userid"));
+	CreateTimer(GetEntPropFloat(iClient, Prop_Send, "m_flFlashDuration"), Timer_RemoveRadar_Delay, iClient);
+	
+	if (client && GetClientTeam(client) == CS_TEAM_SPECTATOR)
 	{
-		int iClient = GetClientOfUserId(GetEventInt(hEvent, "userid"));
-		CreateTimer(GetEntPropFloat(iClient, Prop_Send, "m_flFlashDuration"), Timer_RemoveRadar_Delay, iClient);
-		
-		if (client && GetClientTeam(client) == CS_TEAM_SPECTATOR)
-		{
-		new Float:fDuration = GetEntPropFloat(client, Prop_Send, "m_flFlashDuration");
-		CreateTimer(fDuration, Timer_RemoveRadar_Delay, client);
-		}
-    }
+	new Float:fDuration = GetEntPropFloat(client, Prop_Send, "m_flFlashDuration");
+	CreateTimer(fDuration, Timer_RemoveRadar_Delay, client);
+	}
+	return Plugin_Continue;
 }
 
 public Action OnPlayerBlind(Handle hEvent, const char[] name, bool dontBroadcast)  
 {
-	if (CvarEnables[0] && CvarEnables[1])
-	{
-		int iClient = GetClientOfUserId(GetEventInt(hEvent, "userid"));
-		CreateTimer(GetEntPropFloat(iClient, Prop_Send, "m_flFlashDuration"), Timer_RemoveRadar_Delay, iClient);
-    }
+	if (!CvarEnables[0] || !CvarEnables[1])return Plugin_Continue;
+	
+	int iClient = GetClientOfUserId(GetEventInt(hEvent, "userid"));
+	CreateTimer(GetEntPropFloat(iClient, Prop_Send, "m_flFlashDuration"), Timer_RemoveRadar_Delay, iClient);
+	return Plugin_Continue;
 }
 
 public Action Timer_RemoveRadar_Delay(Handle hTimer, any iClient)
@@ -821,11 +814,6 @@ public Action Timer_RemoveRadar_Delay(Handle hTimer, any iClient)
 		SetEntProp(iClient, Prop_Send, "m_iHideHUD", (1 << 12));
 }
 
-public int CHRadar(Handle cvar, char[] oldValue, char[] newValue)
-{
-	if (CvarEnables[0] && CvarEnables[1] && !GetConVarBool(HRadar))
-		SetConVarBool(HRadar, true, true, false);
-}
 
 public int CMoneyHud(Handle cvar, char[] oldValue, char[] newValue)
 {
