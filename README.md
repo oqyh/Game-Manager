@@ -1,4 +1,4 @@
-# [CSGO] Game-Manager (1.0.5)
+# [CSGO] Game-Manager (1.0.5.Fix)
 https://forums.alliedmods.net/showthread.php?t=336242
 
 ### Game Manager ( Hide Radar, Money, Messages, Blood, Ping, Map Rotaion With Maplist, Restart Server Last Player Disconnect, And More )
