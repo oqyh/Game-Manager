@@ -2,80 +2,80 @@
 {
 	"min30"
 	{
-		"en"			"{default}[ {green}Game Manager {default}] {lightred}Timeleft: 30 minutes."
-		"ru"			"{default}[ {green}Game Manager {default}] {lightred}Осталось времени: 30 минуты"
-		"pt"			"{default}[ {green}Game Manager {default}] {lightred}Tempo restante: 30 minutos."
-		"chi"			"{default}[ {green}Game Manager {default}] {lightred}剩余时间：30 分钟。"
+		"en"			" {green}Gold KingZ {grey}| {lightred}Timeleft: 30 minutes."
+		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 30 минуты"
+		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 30 minutos."
+		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：30 分钟。"
 	}
 	"min20"
 	{
-		"en"			"{default}[ {green}Game Manager {default}] {lightred}Timeleft: 20 minutes."
-		"ru"			"{default}[ {green}Game Manager {default}] {lightred}Осталось времени: 20 минуты"
-		"pt"			"{default}[ {green}Game Manager {default}] {lightred}Tempo restante: 20 minutos."
-		"chi"			"{default}[ {green}Game Manager {default}] {lightred}剩余时间：20 分钟。"
+		"en"			" {green}Gold KingZ {grey}| {lightred}Timeleft: 20 minutes."
+		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 20 минуты"
+		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 20 minutos."
+		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：20 分钟。"
 	}
 	"min10"
 	{
-		"en"			"{default}[ {green}Game Manager {default}] {lightred}Timeleft: 10 minutes."
-		"ru"			"{default}[ {green}Game Manager {default}] {lightred}Осталось времени: 10 минуты"
-		"pt"			"{default}[ {green}Game Manager {default}] {lightred}Tempo restante: 10 minutos."
-		"chi"			"{default}[ {green}Game Manager {default}] {lightred}剩余时间：10 分钟。"
+		"en"			" {green}Gold KingZ {grey}| {lightred}Timeleft: 10 minutes."
+		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 10 минуты"
+		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 10 minutos."
+		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：10 分钟。"
 	}
 	"min5"
 	{
-		"en"			"{default}[ {green}Game Manager {default}] {lightred}Timeleft: 5 minutes."
-		"ru"			"{default}[ {green}Game Manager {default}] {lightred}Осталось времени: 5 минуты"
-		"pt"			"{default}[ {green}Game Manager {default}] {lightred}Tempo restante: 5 minutos."
-		"chi"			"{default}[ {green}Game Manager {default}] {lightred}剩余时间：5 分钟。"
+		"en"			" {green}Gold KingZ {grey}| {lightred}Timeleft: 5 minutes."
+		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 5 минуты"
+		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 5 minutos."
+		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：5 分钟。"
 	}
 	"min2"
 	{
-		"en"			"{default}[ {green}Game Manager {default}] {lightred}Timeleft: 2 minutes."
-		"ru"			"{default}[ {green}Game Manager {default}] {lightred}Осталось времени: 2 минуты"
-		"pt"			"{default}[ {green}Game Manager {default}] {lightred}Tempo restante: 2 minutos."
-		"chi"			"{default}[ {green}Game Manager {default}] {lightred}剩余时间：2 分钟。"
+		"en"			" {green}Gold KingZ {grey}| {lightred}Timeleft: 2 minutes."
+		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 2 минуты"
+		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 2 minutos."
+		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：2 分钟。"
 	}
 	"60sec"
 	{
-		"en"			"{default}[ {green}Game Manager {default}] {lightred}Timeleft: 60 seconds."
-		"ru"			"{default}[ {green}Game Manager {default}] {lightred}Осталось времени: 60 секунды"
-		"pt"			"{default}[ {green}Game Manager {default}] {lightred}Tempo restante: 60 segundas."
-		"chi"			"{default}[ {green}Game Manager {default}] {lightred}剩余时间：60 秒。"
+		"en"			" {green}Gold KingZ {grey}| {lightred}Timeleft: 60 seconds."
+		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 60 секунды"
+		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 60 segundas."
+		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：60 秒。"
 	}
 	"30sec"
 	{
-		"en"			"{default}[ {green}Game Manager {default}] {lightred}Timeleft: 30 seconds."
-		"ru"			"{default}[ {green}Game Manager {default}] {lightred}Осталось времени: 30 секунды"
-		"pt"			"{default}[ {green}Game Manager {default}] {lightred}Tempo restante: 30 segundas."
-		"chi"			"{default}[ {green}Game Manager {default}] {lightred}剩余时间：30 秒。"
+		"en"			" {green}Gold KingZ {grey}| {lightred}Timeleft: 30 seconds."
+		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 30 секунды"
+		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 30 segundas."
+		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：30 秒。"
 	}
 	"15sec"
 	{
-		"en"			"{default}[ {green}Game Manager {default}] {lightred}Timeleft: 15 seconds."
-		"ru"			"{default}[ {green}Game Manager {default}] {lightred}Осталось времени: 15 секунды"
-		"pt"			"{default}[ {green}Game Manager {default}] {lightred}Tempo restante: 15 segundas."
-		"chi"			"{default}[ {green}Game Manager {default}] {lightred}剩余时间：15 秒。"
+		"en"			" {green}Gold KingZ {grey}| {lightred}Timeleft: 15 seconds."
+		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 15 секунды"
+		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 15 segundas."
+		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：15 秒。"
 	}
 	"3sec"
 	{
-		"en"			"{default}[ {green}Game Manager {default}] {lightred}Timeleft: 3 seconds."
-		"ru"			"{default}[ {green}Game Manager {default}] {lightred}Осталось времени: 3 секунды"
-		"pt"			"{default}[ {green}Game Manager {default}] {lightred}Tempo restante: 3 segundas."
-		"chi"			"{default}[ {green}Game Manager {default}] {lightred}剩余时间：3 秒。"
+		"en"			" {green}Gold KingZ {grey}| {lightred}Timeleft: 3 seconds."
+		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 3 секунды"
+		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 3 segundas."
+		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：3 秒。"
 	}
 	"2sec"
 	{
-		"en"			"{default}[ {green}Game Manager {default}] {lightred}Timeleft: 2 seconds."
-		"ru"			"{default}[ {green}Game Manager {default}] {lightred}Осталось времени: 2 секунды"
-		"pt"			"{default}[ {green}Game Manager {default}] {lightred}Tempo restante: 2 segundas."
-		"chi"			"{default}[ {green}Game Manager {default}] {lightred}剩余时间：2 秒。"
+		"en"			" {green}Gold KingZ {grey}| {lightred}Timeleft: 2 seconds."
+		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 2 секунды"
+		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 2 segundas."
+		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：2 秒。"
 	}
 	"1sec"
 	{
-		"en"			"{default}[ {green}Game Manager {default}] {lightred}Timeleft: 1 seconds."
-		"ru"			"{default}[ {green}Game Manager {default}] {lightred}Осталось времени: 1 секунды"
-		"pt"			"{default}[ {green}Game Manager {default}] {lightred}Tempo restante: 1 segundas."
-		"chi"			"{default}[ {green}Game Manager {default}] {lightred}剩余时间：1 秒。"
+		"en"			" {green}Gold KingZ {grey}| {lightred}Timeleft: 1 seconds."
+		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 1 секунды"
+		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 1 segundas."
+		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：1 秒。"
 	}
 	"timerhud"
 	{
