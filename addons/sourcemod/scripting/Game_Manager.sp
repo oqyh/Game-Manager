@@ -252,7 +252,7 @@ public OnPluginStart()
 	g_msgchangename = CreateConVar("gm_block_changename_message"		     , "0", "Hide Change Name Messages (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_forceend = CreateConVar("gm_forceendmap"		     , "0", "Force End Map With Command mp_timelimit (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_blockchicken = CreateConVar("gm_block_chicken"		     , "0", "Permanently Remove Chickens (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
-	g_showtime = CreateConVar("gm_show_timeleft_hud"		     , "0", "Show Timeleft HUD (mp_timelimit) At Bottom  (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_showtime = CreateConVar("gm_show_timeleft_hud"		     , "0", "Show Timeleft HUD (mp_timelimit)  (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_balance = CreateConVar("gm_auto_balance_every_round", "0", "Auto Balance Every Round (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_Cvar_BotQuota = CreateConVar("gm_block_bots", "0", "Permanently Remove bots (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_cEnableNoBlood = CreateConVar("gm_hide_blood"		     , "0", "Hide Blood (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
