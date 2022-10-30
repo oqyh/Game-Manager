@@ -13,14 +13,21 @@
 #define TEAM_SPEC 1
 #define TEAM_T 2
 #define TEAM_CT 3
+#define    HIDEHUD_CHAT    ( 1<<7 )
 
 ConVar g_enable;
+ConVar g_knifesound;
+ConVar g_hurtound;
+ConVar g_shieldsound;
+ConVar g_balance;
 ConVar g_msgsshorthanded;
 ConVar g_radar;
 ConVar g_moneyhud;
 ConVar g_killfeed;
+ConVar g_chathud;
 ConVar g_blockradioagent;
 ConVar g_blockradionade;
+ConVar g_blockradiochat;
 ConVar g_blockwhell;
 ConVar g_blockclantag;
 ConVar g_cheats;
@@ -41,9 +48,9 @@ ConVar g_blockautomute;
 ConVar g_blockfootsteps;
 ConVar g_blockjumpland;
 ConVar g_blockroundendsound;
+ConVar g_blockroundendpanel;
 ConVar g_blockradiostartround;
 ConVar g_blockfalldamage;
-ConVar g_knifesound;
 ConVar Cvar_ListX;
 ConVar Cvar_ListY;
 ConVar Cvar_ListColor;
@@ -60,7 +67,6 @@ int minutesBelowClientLimit;
 int g_ownerOffset;
 bool rotationMapChangeOccured;
 
-Handle g_balance;
 Handle hPluginMe;
 Handle g_Cvar_BotDelayEnable = INVALID_HANDLE;
 Handle g_Cvar_BotQuota = INVALID_HANDLE;
@@ -84,11 +90,18 @@ Handle rotation_default_map = INVALID_HANDLE;
 Handle rotation_config_to_exec = INVALID_HANDLE;
 Handle g_MapList = INVALID_HANDLE;
 
+bool g_bknifesound;
+bool g_bhurtound;
+bool g_bshieldsound;
 bool g_benable = false;
+bool g_bblockradionade = false;
+bool g_bbalance = false;
 bool g_bradar = false;
 bool g_bmoneyhud = false;
 bool g_bkillfeed = false;
+bool g_bchathud = false;
 bool g_bblockradioagent = false;
+bool g_bblockradiochat = false;
 bool g_bblockwhell = false;
 bool g_bblockclantag = false;
 bool g_bcheats = false;
@@ -109,6 +122,7 @@ bool g_bblockautomute = false;
 bool g_bblockfootsteps = false;
 bool g_bblockjumpland = false;
 bool g_bblockroundendsound = false;
+bool g_bblockroundendpanel = false;
 bool g_bblockradiostartround = false;
 bool g_bblockfalldamage = false;
 
@@ -116,7 +130,6 @@ float g_ListX;
 float g_ListY;
 float g_fCvarDelay;
 
-bool g_phitted[MAXPLAYERS];
 bool g_bCvarEnabled;
 bool g_bStartRandomMap;
 bool g_bServerStarted;
@@ -160,7 +173,6 @@ char RadioArray[][] =
 	"go_a",
 	"go_b",
 	"needrop",
-	"deathcry",
 	"deathcry"
 };
 
@@ -223,7 +235,7 @@ public Plugin myinfo =
 	name = "[CS:GO] Game Manager",
 	author = "Gold_KingZ",
 	description = "Game Manager ( Hide radar, money, messages, ping, and more )",
-	version     = "1.0.7",
+	version     = "1.0.8",
 	url = "https://steamcommunity.com/id/oQYh"
 }
 
@@ -235,7 +247,7 @@ public void OnPluginStart()
 	CreateTimer(1.0, Timer_Wep, 0, TIMER_REPEAT);
 	if (GetEngineVersion() != Engine_CSGO)
 	{
-		SetFailState("This plugin is for game use only. CS:GO");
+		SetFailState("This plugin is for CSGO Only");
 		return;
 	}
 	
@@ -243,8 +255,11 @@ public void OnPluginStart()
 	g_radar = CreateConVar("gm_hide_radar"		     , "0", "Hide Radar (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_moneyhud = CreateConVar("gm_hide_moneyhud"		     , "0", "Hide Money Hud (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_killfeed = CreateConVar("gm_hide_killfeed"		     , "0", "Hide Kill Feed (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_chathud = CreateConVar("gm_hide_chathud"		     , "0", "Hide Chat Hud (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_blockradiostartround = CreateConVar("gm_block_radio_start_agents"		     , "0", "Block Round Start Radio Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_blockradioagent = CreateConVar("gm_block_radio_voice_agents"		     , "0", "Block All Radio Voice Agents (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_blockradionade = CreateConVar("gm_block_radio_voice_grenades"		     , "0", "Block All Radio Voice Grenades Throw (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_blockradiochat = CreateConVar("gm_block_radio_chat"		     , "0", "Block All Radio Text Chat (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_blockwhell = CreateConVar("gm_block_wheel"		     , "0", "Block All Wheel + Ping (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_blockclantag = CreateConVar("gm_block_clantag"		     , "0", "Permanently Block Both Dynamic + Animated + Normal ClanTags (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_cheats = CreateConVar("gm_block_cheats"		     , "0", "Make sv_cheats 0 Automatically   (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
@@ -271,9 +286,11 @@ public void OnPluginStart()
 	g_blockfootsteps = CreateConVar("gm_block_footsteps_sound"		     , "0", "Block Footsteps Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_blockjumpland = CreateConVar("gm_block_jumpland_sound"		     , "0", "Block Jump Land Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_blockroundendsound = CreateConVar("gm_block_roundend_sound"		     , "0", "Block Counter/Terrorist/Draw Win Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
-	g_blockradiostartround = CreateConVar("gm_block_radio_start_agents"		     , "0", "Block Round Start Radio Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
-	g_blockfalldamage = CreateConVar("gm_block_falldamage"		     , "0", "Disable Fall Damage (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
-	g_knifesound = CreateConVar("gm_block_zerodamge_knife", "0", "Block Knife Sound If Its Zero Damage (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_blockroundendpanel = CreateConVar("gm_block_roundend_panel"		     , "0", "Block Counter/Terrorist/Draw Win Panel  (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_blockfalldamage = CreateConVar("gm_block_falldamage_sound"		     , "0", "Disable Fall Damage (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_knifesound = CreateConVar("gm_block_knife_sound", "0", "Block Knife Damage Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_hurtound = CreateConVar("gm_block_hurthealth_sound", "0", "Block Hurt Health Damage Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_shieldsound = CreateConVar("gm_block_hurtshield_sound", "0", "Block Hurt Shield Damage Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	Cvar_ListX = CreateConVar("gm_hud_xaxis"		     , "0.00", "X-Axis Location From 0 To 1.0 Check https://github.com/oqyh/Game-Manager/blob/main/images/hud%20postions.png For Help");
 	Cvar_ListY = CreateConVar("gm_hud_yaxis"		     , "0.35", "Y-Axis Location From 0 To 1.0 Check https://github.com/oqyh/Game-Manager/blob/main/images/hud%20postions.png For Help");
 	Cvar_ListColor = CreateConVar("gm_hud_colors"		     , "255 0 189 0.8", "Hud color. [R G B A] Pick Colors https://rgbacolorpicker.com/");
@@ -314,7 +331,9 @@ public void OnPluginStart()
 	HookEvent("player_disconnect", 	OnPlayerDisconnect, EventHookMode_Pre);
 	HookEvent("player_team",  		OnPlayerTeam, 		EventHookMode_Pre);
 	HookEvent("round_end", Event_RoundEnd, EventHookMode_Pre);
+	HookEvent("cs_win_panel_round", Event_WinPanel, EventHookMode_Pre);
 	HookEvent("round_prestart", Event_PreRoundStart);
+	HookEvent("player_spawn", Event_ChatHud);
 	
 	HookUserMessage(GetUserMessageId("RadioText"), OnRadioText, true);
 	HookUserMessage(GetUserMessageId("TextMsg"), OnHookTextMsg, true);
@@ -323,12 +342,18 @@ public void OnPluginStart()
 	HookUserMessage(GetUserMessageId("SayText2"), OnHookTextMsg4, true);
 	
 	HookConVarChange(g_enable, OnSettingsChanged);
+	HookConVarChange(g_knifesound, OnSettingsChanged);
+	HookConVarChange(g_hurtound, OnSettingsChanged);
+	HookConVarChange(g_shieldsound, OnSettingsChanged);
 	HookConVarChange(g_msgsshorthanded, OnSettingsChanged);
 	HookConVarChange(g_radar, OnSettingsChanged);
+	HookConVarChange(g_balance, OnSettingsChanged);
 	HookConVarChange(g_moneyhud, OnSettingsChanged);
 	HookConVarChange(g_killfeed, OnSettingsChanged);
+	HookConVarChange(g_chathud, OnSettingsChanged);
 	HookConVarChange(g_blockradioagent, OnSettingsChanged);
 	HookConVarChange(g_blockradionade, OnSettingsChanged);
+	HookConVarChange(g_blockradiochat, OnSettingsChanged);
 	HookConVarChange(g_blockwhell, OnSettingsChanged);
 	HookConVarChange(g_blockclantag, OnSettingsChanged);
 	HookConVarChange(g_cheats, OnSettingsChanged);
@@ -349,6 +374,7 @@ public void OnPluginStart()
 	HookConVarChange(g_blockfootsteps, OnSettingsChanged);
 	HookConVarChange(g_blockjumpland, OnSettingsChanged);
 	HookConVarChange(g_blockroundendsound, OnSettingsChanged);
+	HookConVarChange(g_blockroundendpanel, OnSettingsChanged);
 	HookConVarChange(g_blockradiostartround, OnSettingsChanged);
 	HookConVarChange(g_blockfalldamage, OnSettingsChanged);
 	HookConVarChange(Cvar_ListX, OnConVarChange);	
@@ -361,8 +387,10 @@ public void OnPluginStart()
 	AddTempEntHook("Impact", TE_OnWorldDecal);
 	
 	AddNormalSoundHook(Call_Back_Radio);
-	AddNormalSoundHook(Call_Back_Sound);
-	HookEvent("player_hurt", PlayerHurt_Event, EventHookMode_Pre);
+	AddNormalSoundHook(Call_Back_Sounds);
+	AddNormalSoundHook(Call_Back_Soundss);
+	AddNormalSoundHook(Call_Back_Soundsss);
+	AddNormalSoundHook(Call_Back_NadeSounds);
 	
 	g_eenable = GetConVarBool(g_enable);
 	HookConVarChange(g_enable, CvarChanged);
@@ -426,6 +454,11 @@ public int OnSettingsChanged(Handle convar, const char[] oldValue, const char[] 
 		g_bradar   = g_radar.BoolValue;
 	}
 	
+	if (convar == g_balance )
+	{
+		g_bbalance   = g_balance.BoolValue;
+	}
+	
 	if(convar == g_moneyhud)
 	{
 		g_bmoneyhud = g_moneyhud.BoolValue;
@@ -436,11 +469,40 @@ public int OnSettingsChanged(Handle convar, const char[] oldValue, const char[] 
 		g_bkillfeed = g_killfeed.BoolValue;
 	}
 	
+	if(convar == g_chathud)
+	{
+		g_bchathud = g_chathud.BoolValue;
+	}
+	
+	if(convar == g_knifesound)
+	{
+		g_bknifesound = g_knifesound.BoolValue;
+	}
+	
+	if(convar == g_hurtound)
+	{
+		g_bhurtound = g_hurtound.BoolValue;
+	}
+	
+	if(convar == g_shieldsound)
+	{
+		g_bshieldsound = g_shieldsound.BoolValue;
+	}
+
 	if(convar == g_blockradioagent)
 	{
 		g_bblockradioagent = g_blockradioagent.BoolValue;
 	}
 	
+	if(convar == g_blockradionade)
+	{
+		g_bblockradionade = g_blockradionade.BoolValue;
+	}
+	
+	if(convar == g_blockradiochat)
+	{
+		g_bblockradiochat = g_blockradiochat.BoolValue;
+	}
 	if(convar == g_blockwhell)
 	{
 		g_bblockwhell = g_blockwhell.BoolValue;
@@ -541,6 +603,11 @@ public int OnSettingsChanged(Handle convar, const char[] oldValue, const char[] 
 		g_bblockroundendsound = g_blockroundendsound.BoolValue;
 	}
 	
+	if(convar == g_blockroundendpanel)
+	{
+		g_bblockroundendpanel = g_blockroundendpanel.BoolValue;
+	}
+	
 	if(convar == g_blockradiostartround)
 	{
 		g_bblockradiostartround = g_blockradiostartround.BoolValue;
@@ -557,9 +624,9 @@ public int OnSettingsChanged(Handle convar, const char[] oldValue, const char[] 
 }
 
 
-public Action Event_RoundStart(Event event, const char[] name, bool quite)
+public Action Event_WinPanel(Event event, const char[] name, bool quite)
 {
-	if (!g_benable || !g_bblockroundendsound) return Plugin_Continue;
+	if (!g_benable || !g_bblockroundendpanel) return Plugin_Continue;
 	
 	if (!quite) 
 	{ 
@@ -584,10 +651,16 @@ public void OnConfigsExecuted()
 {
 
 	g_benable = GetConVarBool(g_enable);
+	g_bknifesound = GetConVarBool(g_knifesound);
+	g_bhurtound = GetConVarBool(g_hurtound);
+	g_bshieldsound = GetConVarBool(g_shieldsound);
 	g_bradar = GetConVarBool(g_radar);
+	g_bbalance = GetConVarBool(g_balance);
 	g_bmoneyhud = GetConVarBool(g_moneyhud);
 	g_bkillfeed = GetConVarBool(g_killfeed);
+	g_bchathud = GetConVarBool(g_chathud);
 	g_bblockradioagent = GetConVarBool(g_blockradioagent);
+	g_bblockradionade = GetConVarBool(g_blockradionade);
 	g_bblockwhell = GetConVarBool(g_blockwhell);
 	g_bblockclantag = GetConVarBool(g_blockclantag);
 	g_bcheats = GetConVarBool(g_cheats);
@@ -608,6 +681,7 @@ public void OnConfigsExecuted()
 	g_bblockfootsteps = GetConVarBool(g_blockfootsteps);
 	g_bblockjumpland = GetConVarBool(g_blockjumpland);
 	g_bblockroundendsound = GetConVarBool(g_blockroundendsound);
+	g_bblockroundendpanel = GetConVarBool(g_blockroundendpanel);
 	g_bblockradiostartround = GetConVarBool(g_blockradiostartround);
 	g_bblockfalldamage = GetConVarBool(g_blockfalldamage);
 	
@@ -684,16 +758,6 @@ void LoadCfg()
 			ServerCommand("cash_team_bonus_shorthanded 0");
 		}
 		
-		if (g_blockradionade.IntValue == 0) 
-		{
-			ServerCommand("sv_ignoregrenaderadio 0");
-		}else
-		
-		if (g_blockradionade.IntValue == 1)
-		{
-			ServerCommand("sv_ignoregrenaderadio 1");
-		}
-		
 		if( g_bradar )
 		{
 			ServerCommand("sv_disable_radar 1");
@@ -739,7 +803,7 @@ void LoadCfg()
 			ServerCommand("sm_cvar sv_mute_players_with_social_penalties 0");
 		}else
 
-		if( !g_bblockautomute )
+		if( !g_bblockautomute || !g_benable)
 		{
 			ServerCommand("sm_cvar sv_mute_players_with_social_penalties 1");
 		}
@@ -787,6 +851,27 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 	return Plugin_Continue;
 }
 
+public Action Event_ChatHud(Event event, const char[] name, bool dontBroadcast)
+{
+	if (!g_benable || !g_bchathud) return Plugin_Continue;
+
+	int userid = GetEventInt(event, "userid");
+	CreateTimer(0.0, hide_chat, userid);
+
+	return Plugin_Continue;
+	}
+
+public Action hide_chat(Handle timer, any userid)
+{
+	int client = GetClientOfUserId(userid);
+
+	if(client != 0 && IsClientInGame(client))
+	{
+		SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD")|HIDEHUD_CHAT);
+	}
+	return Plugin_Continue;
+}
+
 public Action Timer_Wep(Handle timer)
 {
 	int maxEntities;
@@ -809,16 +894,30 @@ public Action Timer_Wep(Handle timer)
 	return Plugin_Continue;
 }
 
-public Action OnRadio(int client, const char[] command, int args)
+public Action OnRadio(int client, const char[] command, int argc)
 {
-	return (g_benable &&  g_bblockradioagent) ?
-		Plugin_Handled : 
-		Plugin_Continue;
-}
+	if (!g_benable || !g_bblockradioagent) {
+		return Plugin_Continue;
+	} else {
+		return Plugin_Handled;
+	}
+} 
+
+public Action Call_Back_NadeSounds(int clients[64], int &numClients, char sample[PLATFORM_MAX_PATH], int &client, int &channel, float &volume, int &level, int &pitch, int &flags)
+{
+	if (!g_benable || !g_bblockradionade) return Plugin_Continue;
+	
+	if (StrContains(sample, "_decoy") != -1 || StrContains(sample, "_grenade") != -1 || StrContains(sample, "_flashbang") != -1 || StrContains(sample, "_molotov") != -1 || StrContains(sample, "_smoke") != -1)
+	{
+		return Plugin_Handled;
+	}
+	return Plugin_Continue;
+} 
+
 
 public Action OnRadioText(UserMsg msg_id, Protobuf bf, const int[] players, int playersNum, bool reliable, bool init)
 {
-	return (g_benable &&  g_bblockradioagent) ?
+	return (g_benable && g_bblockradiochat) ?
 		Plugin_Handled : 
 		Plugin_Continue;
 }
@@ -1054,7 +1153,7 @@ public void OnConVarChange(Handle convar, const char[] oldValue, const char[] ne
 		g_ListX = StringToFloat(newValue);
 		if( (g_ListX > 1.0 || g_ListX < 0) && g_ListX != -1.0)
 		{
-			PrintToServer("[Speclist] Error - Invalid X coordinate value: %f", g_ListX);
+			PrintToServer("[Game Manager] Error - Invalid X coordinate value: %f", g_ListX);
 			g_ListX = 0.17;
 		}
 	}
@@ -1063,7 +1162,7 @@ public void OnConVarChange(Handle convar, const char[] oldValue, const char[] ne
 		g_ListY = StringToFloat(newValue);
 		if( (g_ListY > 1.0 || g_ListY < 0) && g_ListY != -1.0)
 		{
-			PrintToServer("[Speclist] Error - Invalid Y coordinate value: %f", g_ListY);
+			PrintToServer("[Game Manager] Error - Invalid Y coordinate value: %f", g_ListY);
 			g_ListY = 0.01;
 		}
 	}
@@ -1107,14 +1206,14 @@ void StrToRGBA(const char[] Color)
 			if(g_iListColor[i] > 255 || g_iListColor[i] < 0)
 			{
 				g_iListColor[i] = 255;
-				PrintToServer("[Speclist] Error - RGBA[%d]=%d is not in the range 0-255", i, g_iListColor[i]);
+				PrintToServer("[Game Manager] Error - RGBA[%d]=%d is not in the range 0-255", i, g_iListColor[i]);
 			}
 		}
 	}
 	else
 	{
 		g_iListColor = {255, 255, 255, 150};
-		PrintToServer("[Speclist] Error - Invalid color format: %s", Color);
+		PrintToServer("[Game Manager] Error - Invalid color format: %s", Color);
 	}
 }
 
@@ -1141,7 +1240,7 @@ public Action Event_PreRoundStart(Handle event, const char[] name, bool dontBroa
     int T_Count = GetTeamClientCount(CS_TEAM_T);
     int CT_Count = GetTeamClientCount(CS_TEAM_CT);
     
-    if(!g_benable || !GetConVarBool(g_balance) || T_Count == CT_Count || T_Count + 1 == CT_Count || CT_Count + 1 == T_Count)
+    if(!g_benable || !g_bbalance || T_Count == CT_Count || T_Count + 1 == CT_Count || CT_Count + 1 == T_Count)
         return Plugin_Continue;
         
     while(T_Count > CT_Count && T_Count != CT_Count + 1)
@@ -1360,66 +1459,58 @@ stock int GetDecalName(int index, char[] sDecalName, int maxlen)
 	return ReadStringTable(table, index, sDecalName, maxlen);
 }
 
-public Action PlayerHurt_Event(Event event, const char[] name, bool dontBroadcast)
+public Action Call_Back_Sounds(int clients[MAXPLAYERS], int &numClients, char sample[PLATFORM_MAX_PATH], int &entity, int &channel, float &volume, int &level, int &pitch, int &flags, char soundEntry[PLATFORM_MAX_PATH], int &seed)
 {
-	int attacker = GetClientOfUserId(event.GetInt("attacker"));
-	
-	g_phitted[attacker] = true;
-	
-	return Plugin_Continue;
-}
-
-public Action Call_Back_Sound(int clients[MAXPLAYERS], int &numClients, char sample[PLATFORM_MAX_PATH], int &entity, int &channel, float &volume, int &level, int &pitch, int &flags, char soundEntry[PLATFORM_MAX_PATH], int &seed)
-{
-	char classname[64];
-	GetEdictClassname(entity, classname, sizeof(classname));
-	
 	if (IsValidEdict(entity) && IsValidEntity(entity))
     {
-		if(StrContains(sample, "flesh") != -1 || StrContains(sample, "kevlar") != -1)
+		if (g_benable)
 		{
-		if (GetConVarBool(g_enable))
+		if (g_bknifesound)
 			{
-		if (GetConVarBool(g_knifesound))
-			{
-			numClients = 0;
-			
-			return Plugin_Changed;
+				if (StrContains(sample, "knife") != -1)
+				{
+					return Plugin_Handled;
+				}
 			}
-		}
-		}
-		
-		if(StrContains(classname, "knife") != -1)
-		{
-			int client = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-			
-			if(!IsValidClient(client, false))
-				return Plugin_Continue;
-			
-			if(g_phitted[client])
-			{
-				g_phitted[client] = false;
-				return Plugin_Continue;
-			}
-			
-			if (GetConVarBool(g_enable))
-			{
-			if (GetConVarBool(g_knifesound))
-			{
-			numClients = 0;
-			
-			g_phitted[client] = false;
-			}
-			}
-			return Plugin_Changed;
 		}
 	}
 	return Plugin_Continue;
 }
 
-stock bool IsValidClient(int client, bool botcheck = true)
+public Action Call_Back_Soundss(int clients[MAXPLAYERS], int &numClients, char sample[PLATFORM_MAX_PATH], int &entity, int &channel, float &volume, int &level, int &pitch, int &flags, char soundEntry[PLATFORM_MAX_PATH], int &seed)
 {
-	return (1 <= client && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client) && (botcheck ? !IsFakeClient(client) : true)); 
+	if (IsValidEdict(entity) && IsValidEntity(entity))
+    {
+		if (g_enable)
+		{
+		if (g_bhurtound)
+			{
+				if (StrContains(sample, "flesh") != -1)
+				{
+					return Plugin_Handled;
+				}
+			}
+		}
+	}
+	return Plugin_Continue;
+}
+
+public Action Call_Back_Soundsss(int clients[MAXPLAYERS], int &numClients, char sample[PLATFORM_MAX_PATH], int &entity, int &channel, float &volume, int &level, int &pitch, int &flags, char soundEntry[PLATFORM_MAX_PATH], int &seed)
+{
+	if (IsValidEdict(entity) && IsValidEntity(entity))
+    {
+		if (g_enable)
+		{
+		if (g_bshieldsound)
+			{
+				if (StrContains(sample, "kevlar") != -1)
+				{
+					return Plugin_Handled;
+				}
+			}
+		}
+	}
+	return Plugin_Continue;
 }
 
 public void OnCvarChanged(ConVar convar, const char[] oldValue, const char[] newValue)
