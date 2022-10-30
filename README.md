@@ -1,7 +1,7 @@
 # [CSGO] Game-Manager (1.0.8)
 https://forums.alliedmods.net/showthread.php?t=336242
 
-### Game Manager ( Block Radio , Radio Start Round Hide Radar , Money , Messages , Blood , Ping , Map Rotaion With Maplist , Restart Server Last Player Disconnect , And More )
+### Game Manager ( Block Radio , Radio Start Round , Hide Radar , Money , Messages , Blood , Ping , Map Rotaion With Maplist , Restart Server Last Player Disconnect , And More )
 
 ![alt text](https://github.com/oqyh/Game_Manager/blob/main/images/hud%20postions.png?raw=true)
 
