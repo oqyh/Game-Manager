@@ -21,7 +21,7 @@ https://forums.alliedmods.net/showthread.php?t=336242
 
 
 ## .:[ ConVars ]:.
-  ```
+ ```
 //|||||||||||||||||||||||||||||||||| BLOCK/HIDE/MISC FEATURE |||||||||||||||||||||||||||||||||||||||||||||
 // .::[Enable Hide And Block Feature]::. || 1= Yes || 0= No
 gm_enable_hide_and_block "1"
@@ -89,9 +89,6 @@ gm_block_roundend_sound "0"
 // Block Knife Damage Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_knife_sound "0"
 
-// Disable Fall Damage (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
-gm_block_falldamage_sound "0"
-
 // Block Hurt Health Damage Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_hurthealth_sound "0"
 
@@ -106,6 +103,9 @@ gm_block_weapon_drop "0"
 
 // Block Counter/Terrorist/Draw Win Panel  (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_roundend_panel "0"
+
+// Disable Fall Damage (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
+gm_block_falldamage "0"
 
 // Permanently Remove bots (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_bots "0"
