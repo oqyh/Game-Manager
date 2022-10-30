@@ -287,7 +287,7 @@ public void OnPluginStart()
 	g_blockjumpland = CreateConVar("gm_block_jumpland_sound"		     , "0", "Block Jump Land Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_blockroundendsound = CreateConVar("gm_block_roundend_sound"		     , "0", "Block Counter/Terrorist/Draw Win Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_blockroundendpanel = CreateConVar("gm_block_roundend_panel"		     , "0", "Block Counter/Terrorist/Draw Win Panel  (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
-	g_blockfalldamage = CreateConVar("gm_block_falldamage_sound"		     , "0", "Disable Fall Damage (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_blockfalldamage = CreateConVar("gm_block_falldamage"		     , "0", "Disable Fall Damage (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_knifesound = CreateConVar("gm_block_knife_sound", "0", "Block Knife Damage Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_hurtound = CreateConVar("gm_block_hurthealth_sound", "0", "Block Hurt Health Damage Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_shieldsound = CreateConVar("gm_block_hurtshield_sound", "0", "Block Hurt Shield Damage Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
