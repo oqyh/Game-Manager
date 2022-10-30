@@ -1,4 +1,4 @@
-# [CSGO] Game-Manager (1.0.7)
+# [CSGO] Game-Manager (1.0.8)
 https://forums.alliedmods.net/showthread.php?t=336242
 
 ### Game Manager ( Block Radio , Radio Start Round Hide Radar , Money , Messages , Blood , Ping , Map Rotaion With Maplist , Restart Server Last Player Disconnect , And More )
@@ -59,6 +59,12 @@ gm_block_teamchange_message "0"
 // Hide Team Mate Attack Messages (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_teammateattack_message "0"
 
+// Block All Radio Text Chat (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
+gm_block_radio_chat "0"
+
+// Hide Chat Hud (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
+gm_hide_chathud "0"
+
 
 //////////////////////>>  .;[ SOUNDS ];.
 
@@ -80,14 +86,26 @@ gm_block_jumpland_sound "0"
 // Block Counter/Terrorist/Draw Win Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_roundend_sound "0"
 
-// Block Knife Sound If Its Zero Damage (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
-gm_block_zerodamge_knife "0"
+// Block Knife Damage Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
+gm_block_knife_sound "0"
+
+// Disable Fall Damage (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
+gm_block_falldamage_sound "0"
+
+// Block Hurt Health Damage Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
+gm_block_hurthealth_sound "0"
+
+// Block Hurt Shield Damage Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
+gm_block_hurtshield_sound "0"
 
 
 //////////////////////>>  .;[ OTHER ];.
 
 // Delete/Clean Weapons Dropped (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_weapon_drop "0"
+
+// Block Counter/Terrorist/Draw Win Panel  (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
+gm_block_roundend_panel "0"
 
 // Permanently Remove bots (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_bots "0"
@@ -106,9 +124,6 @@ gm_block_auto_mute "0"
 
 // Make sv_cheats 0 Automatically   (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_cheats "0"
-
-// Disable Fall Damage (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
-gm_block_falldamage "0"
 
 // Block All Wheel + Ping (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_wheel "0"
@@ -190,6 +205,17 @@ gm_rotation_config_to_exec ""
 
 ## .:[ Change Log ]:.
 ```
+(1.0.8)
+-Fix Bug
+-Fix (-1 - -1) error
+-Fix gm_block_radio_voice_grenades
+-Fix + Changed gm_block_zerodamge_knife To gm_block_knife_sound
+-Added gm_block_radio_chat
+-Added gm_hide_chathud
+-Added gm_block_hurthealth_sound
+-Added gm_block_hurtshield_sound
+-Added gm_block_roundend_panel
+
 (1.0.7)
 -Fix Bug
 -New Syntax
@@ -212,50 +238,50 @@ gm_rotation_config_to_exec ""
 -Fix gm_block_zerodamge_knife Error Log
 
 (1.0.5.Fix)
-- Fix Bug
-- Fix gm_enable_hide_and_block Feature
-- Fix Force Radar Toggle All gm_enable_hide_and_block Feature
+-Fix Bug
+-Fix gm_enable_hide_and_block Feature
+-Fix Force Radar Toggle All gm_enable_hide_and_block Feature
 
 (1.0.5)
-- Fix Bug
-- Added Block Knife Sound If Its Zero Damage
-- Added Permanently Block Both Animated WASD Or Normal ClanTags 
-- Added Disable Fall Damage
-- Added X-Axis And Y-Axis  Location Hud For Time Left
-- Added Colors For Hud
-- Added Multiple Language For Timer Left And Hud
+-Fix Bug
+-Added Block Knife Sound If Its Zero Damage
+-Added Permanently Block Both Animated WASD Or Normal ClanTags 
+-Added Disable Fall Damage
+-Added X-Axis And Y-Axis  Location Hud For Time Left
+-Added Colors For Hud
+-Added Multiple Language For Timer Left And Hud
 
 (1.0.4)
-- Fix Bug
-- Fix Unknown command "sm_block_all_radio_messages"
-- Added Remove Auto Communication Penalties
-- Added Block Footsteps Sounds
-- Added Block Jump Land Sounds
+-Fix Bug
+-Fix Unknown command "sm_block_all_radio_messages"
+-Added Remove Auto Communication Penalties
+-Added Block Footsteps Sounds
+-Added Block Jump Land Sounds
 
 (1.0.3)
-- Fix Bug
-- Fix Map Rotation Feature
-- Fix Blood + Splatter Hide
-- Added Hide Change Name Message
+-Fix Bug
+-Fix Map Rotation Feature
+-Fix Blood + Splatter Hide
+-Added Hide Change Name Message
 
 (1.0.2)
-- Fix Bug
-- Fix "sm_enable_hide_and_block Feature"
-- Added Hide blood
-- Added Hide Blood Splash
-- Added Hide Blood Splatter
+-Fix Bug
+-Fix "sm_enable_hide_and_block Feature"
+-Added Hide blood
+-Added Hide Blood Splash
+-Added Hide Blood Splatter
 
 (1.0.1)
-- Fix Bug
-- Fix Radar When its Hidden It Shows To Spectators
-- Added "sorry" Radio Missing
-- Added Permanently Remove bots 
-- Added Force Auto Balance Team Every Round
-- Added Map Rotation With Maplist Feature ( Thanks Teki, tabakhase , Stewart Anubis )
-- Added Restart Server When Last Player Disconnect Feature ( Thanks Dragokas )
+-Fix Bug
+-Fix Radar When its Hidden It Shows To Spectators
+-Added "sorry" Radio Missing
+-Added Permanently Remove bots 
+-Added Force Auto Balance Team Every Round
+-Added Map Rotation With Maplist Feature ( Thanks Teki, tabakhase , Stewart Anubis )
+-Added Restart Server When Last Player Disconnect Feature ( Thanks Dragokas )
 
 (1.0.0)
-- Initial Release
+-Initial Release
 ```
 
 ## .:[ Donation ]:.
