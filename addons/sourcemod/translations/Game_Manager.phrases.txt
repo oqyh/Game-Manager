@@ -6,6 +6,7 @@
 		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 30 минуты"
 		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 30 minutos."
 		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：30 分钟。"
+		"lv"			" {green}Gold KingZ {grey}| {lightred}Laiks Palicis: 30 minūtes."
 	}
 	"min20"
 	{
@@ -13,6 +14,7 @@
 		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 20 минуты"
 		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 20 minutos."
 		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：20 分钟。"
+		"lv"			" {green}Gold KingZ {grey}| {lightred}Laiks Palicis: 20 minūtes."
 	}
 	"min10"
 	{
@@ -20,6 +22,7 @@
 		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 10 минуты"
 		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 10 minutos."
 		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：10 分钟。"
+		"lv"			" {green}Gold KingZ {grey}| {lightred}Laiks Palicis: 10 minūtes."
 	}
 	"min5"
 	{
@@ -27,6 +30,7 @@
 		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 5 минуты"
 		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 5 minutos."
 		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：5 分钟。"
+		"lv"			" {green}Gold KingZ {grey}| {lightred}Laiks Palicis: 5 minūtes."
 	}
 	"min2"
 	{
@@ -34,6 +38,7 @@
 		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 2 минуты"
 		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 2 minutos."
 		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：2 分钟。"
+		"lv"			" {green}Gold KingZ {grey}| {lightred}Laiks Palicis: 2 minūtes."
 	}
 	"60sec"
 	{
@@ -41,6 +46,7 @@
 		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 60 секунды"
 		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 60 segundas."
 		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：60 秒。"
+		"lv"			" {green}Gold KingZ {grey}| {lightred}Laiks Palicis: 60 sekundes."
 	}
 	"30sec"
 	{
@@ -48,6 +54,8 @@
 		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 30 секунды"
 		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 30 segundas."
 		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：30 秒。"
+		"lv"			" {green}Gold KingZ {grey}| {lightred}Laiks Palicis: 30 sekundes."
+		
 	}
 	"15sec"
 	{
@@ -55,6 +63,7 @@
 		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 15 секунды"
 		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 15 segundas."
 		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：15 秒。"
+		"lv"			" {green}Gold KingZ {grey}| {lightred}Laiks Palicis: 15 sekundes."
 	}
 	"3sec"
 	{
@@ -62,6 +71,7 @@
 		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 3 секунды"
 		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 3 segundas."
 		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：3 秒。"
+		"lv"			" {green}Gold KingZ {grey}| {lightred}Laiks Palicis: 3 sekundes."
 	}
 	"2sec"
 	{
@@ -69,6 +79,7 @@
 		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 2 секунды"
 		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 2 segundas."
 		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：2 秒。"
+		"lv"			" {green}Gold KingZ {grey}| {lightred}Laiks Palicis: 2 sekundes."
 	}
 	"1sec"
 	{
@@ -76,6 +87,7 @@
 		"ru"			" {green}Gold KingZ {grey}| {lightred}Осталось времени: 1 секунды"
 		"pt"			" {green}Gold KingZ {grey}| {lightred}Tempo restante: 1 segundas."
 		"chi"			" {green}Gold KingZ {grey}| {lightred}剩余时间：1 秒。"
+		"lv"			" {green}Gold KingZ {grey}| {lightred}Laiks Palicis: 1 sekunde."
 	}
 	"timerhud"
 	{
@@ -83,5 +95,6 @@
 		"ru"			"Время вышло:"
 		"pt"			"Tempo restante:"
 		"chi"			"剩余时间:"
+		"lv"			"Laiks Palicis:"
 	}
 }
