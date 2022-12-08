@@ -1,4 +1,4 @@
-# [CSGO] Game-Manager (1.0.8)
+# [CSGO] Game-Manager (1.0.9)
 https://forums.alliedmods.net/showthread.php?t=336242
 
 ### Game Manager ( Block Radio , Radio Start Round , Hide Radar , Money , Messages , Blood , Ping , Map Rotaion With Maplist , Restart Server Last Player Disconnect , And More )
@@ -62,10 +62,6 @@ gm_block_teammateattack_message "0"
 // Block All Radio Text Chat (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_radio_chat "0"
 
-// Hide Chat Hud (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
-gm_hide_chathud "0"
-
-
 //////////////////////>>  .;[ SOUNDS ];.
 
 // Block All Radio Voice Agents (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
@@ -95,6 +91,8 @@ gm_block_hurthealth_sound "0"
 // Block Hurt Shield Damage Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_hurtshield_sound "0"
 
+// Block Death Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
+gm_block_death_sound "0"
 
 //////////////////////>>  .;[ OTHER ];.
 
@@ -139,6 +137,9 @@ gm_hide_killfeed "0"
 
 // Hide Money Hud (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_hide_moneyhud "0"
+
+// Hide Chat Hud (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
+gm_hide_chathud "0"
 
 // Hide Radar (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_hide_radar "0"
@@ -205,6 +206,18 @@ gm_rotation_config_to_exec ""
 
 ## .:[ Change Log ]:.
 ```
+(1.0.9)
+-Fix Bug
+-Fix gm_block_radio_voice_grenades Incgrenade CT No Sound
+-Fix gm_hide_radar Cvar Forcer
+-Fix gm_hide_moneyhud Cvar Forcer
+-Fix gm_block_shorthanded_message Cvar Forcer
+-Fix gm_block_falldamage Cvar Forcer
+-Fix gm_block_jumpland_sound Cvar Forcer
+-Fix gm_block_footsteps_sound Cvar Forcer
+-Fix gm_block_auto_mute Cvar Forcer
+-Added gm_block_death_sound
+
 (1.0.8)
 -Fix Bug
 -Fix (-1 - -1) error
