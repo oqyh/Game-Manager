@@ -13,12 +13,13 @@
 #define TEAM_SPEC 1
 #define TEAM_T 2
 #define TEAM_CT 3
-#define    HIDEHUD_CHAT    ( 1<<7 )
+#define HIDEHUD_CHAT ( 1<<7 )
 
 ConVar g_enable;
 ConVar g_knifesound;
 ConVar g_hurtound;
 ConVar g_shieldsound;
+ConVar g_deathsound;
 ConVar g_balance;
 ConVar g_msgsshorthanded;
 ConVar g_radar;
@@ -60,6 +61,14 @@ ConVar g_ConVarEnable;
 ConVar g_ConVarMethod;
 ConVar g_ConVarDelay;
 ConVar g_ConVarHibernate;
+ConVar gcv_force = null;
+ConVar gcv_force2 = null;
+ConVar gcv_force3 = null;
+ConVar gcv_force4 = null;
+ConVar gcv_force5 = null;
+ConVar gcv_force6 = null;
+ConVar gcv_force7 = null;
+ConVar gcv_force8 = null;
 
 int g_MapPos;
 int g_MapListSerial;
@@ -125,6 +134,7 @@ bool g_bblockroundendsound = false;
 bool g_bblockroundendpanel = false;
 bool g_bblockradiostartround = false;
 bool g_bblockfalldamage = false;
+bool g_bdeathsound = false;
 
 float g_ListX;
 float g_ListY;
@@ -235,7 +245,7 @@ public Plugin myinfo =
 	name = "[CS:GO] Game Manager",
 	author = "Gold_KingZ",
 	description = "Game Manager ( Hide radar, money, messages, ping, and more )",
-	version     = "1.0.8",
+	version     = "1.0.9",
 	url = "https://steamcommunity.com/id/oQYh"
 }
 
@@ -291,6 +301,7 @@ public void OnPluginStart()
 	g_knifesound = CreateConVar("gm_block_knife_sound", "0", "Block Knife Damage Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_hurtound = CreateConVar("gm_block_hurthealth_sound", "0", "Block Hurt Health Damage Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	g_shieldsound = CreateConVar("gm_block_hurtshield_sound", "0", "Block Hurt Shield Damage Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
+	g_deathsound = CreateConVar("gm_block_death_sound", "0", "Block Death Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No", _, true, 0.0, true, 1.0);
 	Cvar_ListX = CreateConVar("gm_hud_xaxis"		     , "0.00", "X-Axis Location From 0 To 1.0 Check https://github.com/oqyh/Game-Manager/blob/main/images/hud%20postions.png For Help");
 	Cvar_ListY = CreateConVar("gm_hud_yaxis"		     , "0.35", "Y-Axis Location From 0 To 1.0 Check https://github.com/oqyh/Game-Manager/blob/main/images/hud%20postions.png For Help");
 	Cvar_ListColor = CreateConVar("gm_hud_colors"		     , "255 0 189 0.8", "Hud color. [R G B A] Pick Colors https://rgbacolorpicker.com/");
@@ -345,6 +356,7 @@ public void OnPluginStart()
 	HookConVarChange(g_knifesound, OnSettingsChanged);
 	HookConVarChange(g_hurtound, OnSettingsChanged);
 	HookConVarChange(g_shieldsound, OnSettingsChanged);
+	HookConVarChange(g_deathsound, OnSettingsChanged);
 	HookConVarChange(g_msgsshorthanded, OnSettingsChanged);
 	HookConVarChange(g_radar, OnSettingsChanged);
 	HookConVarChange(g_balance, OnSettingsChanged);
@@ -391,10 +403,30 @@ public void OnPluginStart()
 	AddNormalSoundHook(Call_Back_Soundss);
 	AddNormalSoundHook(Call_Back_Soundsss);
 	AddNormalSoundHook(Call_Back_NadeSounds);
+	AddNormalSoundHook(Call_Back_DeathSound);
 	
 	g_eenable = GetConVarBool(g_enable);
 	HookConVarChange(g_enable, CvarChanged);
 	
+	gcv_force = FindConVar("sv_disable_radar");
+	gcv_force.AddChangeHook(Onchanged);
+	
+	gcv_force2 = FindConVar("mp_playercashawards");
+	gcv_force2.AddChangeHook(Onchanged2);
+	gcv_force3 = FindConVar("mp_teamcashawards");
+	gcv_force3.AddChangeHook(Onchanged2);
+	
+	gcv_force4 = FindConVar("cash_team_bonus_shorthanded");
+	gcv_force4.AddChangeHook(Onchanged3);
+	
+	gcv_force5 = FindConVar("sv_falldamage_scale");
+	gcv_force5.AddChangeHook(Onchanged4);
+	gcv_force6 = FindConVar("sv_min_jump_landing_sound");
+	gcv_force6.AddChangeHook(Onchanged5);
+	gcv_force7 = FindConVar("sv_footsteps");
+	gcv_force7.AddChangeHook(Onchanged6);
+	gcv_force8 = FindConVar("sv_mute_players_with_social_penalties");
+	gcv_force8.AddChangeHook(Onchanged7);
 	
 	g_botQuota = GetConVarInt(g_Cvar_BotQuota);
 	HookConVarChange(g_Cvar_BotQuota, CvarChanged);
@@ -441,6 +473,95 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	return APLRes_Success;
 }
 
+public void Onchanged(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	if( g_benable == true)
+	{
+		if(g_bradar == true)
+		{
+			if (StringToInt(newValue) != 1) {
+			gcv_force.IntValue = 1;
+			}
+		}
+	}
+}
+public void Onchanged2(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	if( g_benable == true)
+	{
+		if(g_bmoneyhud == true)
+		{
+			if (StringToInt(newValue) != 0) {
+			gcv_force2.IntValue = 0;
+			}
+			
+			if (StringToInt(newValue) != 0) {
+			gcv_force3.IntValue = 0;
+			}
+		}
+	}
+}
+
+public void Onchanged3(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	if( g_benable == true)
+	{
+		if (g_msgsshorthanded.IntValue == 1) 
+		{
+			if (StringToInt(newValue) != 0) {
+			gcv_force4.IntValue = 0;
+			}
+		}
+	}
+}
+public void Onchanged4(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	if( g_benable == true)
+	{
+		if( g_bblockfalldamage == true)
+		{
+			if (StringToInt(newValue) != 0) {
+			gcv_force5.IntValue = 0;
+			}
+		}
+	}
+}
+public void Onchanged5(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	if( g_benable == true)
+	{
+		if( g_bblockjumpland == true)
+		{
+			if (StringToInt(newValue) != 999999) {
+			gcv_force6.IntValue = 999999;
+			}
+		}
+	}
+}
+public void Onchanged6(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	if( g_benable == true)
+	{
+		if( g_bblockfootsteps == true)
+		{
+			if (StringToInt(newValue) != 0) {
+			gcv_force7.IntValue = 0;
+			}
+		}
+	}
+}
+public void Onchanged7(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	if( g_benable == true)
+	{
+		if( g_bblockautomute == true)
+		{
+			if (StringToInt(newValue) != 0) {
+			gcv_force8.IntValue = 0;
+			}
+		}
+	}
+}
 
 public int OnSettingsChanged(Handle convar, const char[] oldValue, const char[] newValue)
 {
@@ -489,6 +610,10 @@ public int OnSettingsChanged(Handle convar, const char[] oldValue, const char[] 
 		g_bshieldsound = g_shieldsound.BoolValue;
 	}
 
+	if(convar == g_deathsound)
+	{
+		g_bdeathsound = g_deathsound.BoolValue;
+	}
 	if(convar == g_blockradioagent)
 	{
 		g_bblockradioagent = g_blockradioagent.BoolValue;
@@ -654,6 +779,7 @@ public void OnConfigsExecuted()
 	g_bknifesound = GetConVarBool(g_knifesound);
 	g_bhurtound = GetConVarBool(g_hurtound);
 	g_bshieldsound = GetConVarBool(g_shieldsound);
+	g_bdeathsound = GetConVarBool(g_deathsound);
 	g_bradar = GetConVarBool(g_radar);
 	g_bbalance = GetConVarBool(g_balance);
 	g_bmoneyhud = GetConVarBool(g_moneyhud);
@@ -907,7 +1033,18 @@ public Action Call_Back_NadeSounds(int clients[64], int &numClients, char sample
 {
 	if (!g_benable || !g_bblockradionade) return Plugin_Continue;
 	
-	if (StrContains(sample, "_decoy") != -1 || StrContains(sample, "_grenade") != -1 || StrContains(sample, "_flashbang") != -1 || StrContains(sample, "_molotov") != -1 || StrContains(sample, "_smoke") != -1)
+	if (StrContains(sample, "ct_decoy") != -1 || StrContains(sample, "ct_grenade") != -1 || StrContains(sample, "ct_flashbang") != -1 || StrContains(sample, "ct_molotov") != -1 || StrContains(sample, "ct_smoke") != -1 || StrContains(sample, "t_decoy") != -1 || StrContains(sample, "t_grenade") != -1 || StrContains(sample, "t_flashbang") != -1 || StrContains(sample, "t_molotov") != -1 || StrContains(sample, "t_smoke") != -1)
+	{
+		return Plugin_Handled;
+	}
+	return Plugin_Continue;
+} 
+
+public Action Call_Back_DeathSound(int clients[64], int &numClients, char sample[PLATFORM_MAX_PATH], int &client, int &channel, float &volume, int &level, int &pitch, int &flags)
+{
+	if (!g_benable || !g_bdeathsound) return Plugin_Continue;
+	
+	if (StrContains(sample, "death1") != -1 || StrContains(sample, "death2") != -1 || StrContains(sample, "death3") != -1 || StrContains(sample, "death4") != -1 || StrContains(sample, "death5") != -1 || StrContains(sample, "death6") != -1)
 	{
 		return Plugin_Handled;
 	}
