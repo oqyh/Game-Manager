@@ -1,4 +1,4 @@
-# [CSGO] Game-Manager (1.0.9)
+# [CSGO] Game-Manager (1.1.0)
 https://forums.alliedmods.net/showthread.php?t=336242
 
 ### Game Manager ( Block Radio , Radio Start Round , Hide Radar , Money , Messages , Blood , Ping , Map Rotaion With Maplist , Restart Server Last Player Disconnect , And More )
@@ -22,12 +22,13 @@ https://forums.alliedmods.net/showthread.php?t=336242
 
 ## .:[ ConVars ]:.
  ```
-//|||||||||||||||||||||||||||||||||| BLOCK/HIDE/MISC FEATURE |||||||||||||||||||||||||||||||||||||||||||||
+//============== BLOCK/HIDE/MISC FEATURE =================
 // .::[Enable Hide And Block Feature]::. || 1= Yes || 0= No
 gm_enable_hide_and_block "1"
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//==================================================
 
-//////////////////////>>  .;[ MESSAGES ];.
+
+//-------------------------------->> .;[ MESSAGES ];. <<---------------------------------
 
 // Hide Connect Messages (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_connect_message "0"
@@ -62,7 +63,11 @@ gm_block_teammateattack_message "0"
 // Block All Radio Text Chat (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_radio_chat "0"
 
-//////////////////////>>  .;[ SOUNDS ];.
+// Hide Your Chicken Has Been Killed Messages (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
+gm_block_chicken_message "0"
+
+
+//-------------------------------->> .;[ SOUNDS ];. <<---------------------------------
 
 // Block All Radio Voice Agents (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_radio_voice_agents "0"
@@ -82,19 +87,20 @@ gm_block_jumpland_sound "0"
 // Block Counter/Terrorist/Draw Win Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_roundend_sound "0"
 
-// Block Knife Damage Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
-gm_block_knife_sound "0"
+// Block Zero Damage Knife Sounds (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
+gm_block_zero_knife_sound "0"
 
-// Block Hurt Health Damage Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
-gm_block_hurthealth_sound "0"
-
-// Block Hurt Shield Damage Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
-gm_block_hurtshield_sound "0"
+// Block HeadShot Hit Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
+gm_block_hsdamage_sound "0"
 
 // Block Death Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_death_sound "0"
 
-//////////////////////>>  .;[ OTHER ];.
+// Block After Death HeadShot Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
+gm_block_hsdeath_sound "0"
+
+
+//-------------------------------->> .;[ MISC/OTHER ];. <<---------------------------------
 
 // Delete/Clean Weapons Dropped (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_weapon_drop "0"
@@ -102,7 +108,7 @@ gm_block_weapon_drop "0"
 // Block Counter/Terrorist/Draw Win Panel  (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_roundend_panel "0"
 
-// Disable Fall Damage (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
+// Disable Fall Damage + Fall Damage Sound (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_falldamage "0"
 
 // Permanently Remove bots (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
@@ -110,6 +116,12 @@ gm_block_bots "0"
 
 // Permanently Remove Chickens (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_chicken "0"
+
+// Remove Dead Body (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
+gm_block_deadbody "0"
+
+// After How Much Time (In Sec) To Start Remove Dead Body (Need gm_block_deadbody 1)
+gm_block_time_deadbody "2.0"
 
 // Permanently Block Both Dynamic + Animated + Normal ClanTags (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_block_clantag "0"
@@ -145,10 +157,15 @@ gm_hide_chathud "0"
 gm_hide_radar "0"
 
 
+
 // Force End Map With Command mp_timelimit (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
 gm_forceendmap "0"
 
-// Show Timeleft HUD (mp_timelimit)  (Need To Enable gm_enable_hide_and_block) || 1= Yes || 0= No
+// Show Timeleft HUD (mp_timelimit)  (Need To Enable gm_enable_hide_and_block) || 3=  || 2=  || 1=  || 0= No
+//  0= No
+//  1= Yes + Disable Togglable
+//  2= Yes But On By First Time Then Make it Togglable
+//  3= Yes But Off By First Time Then Make it Togglable
 gm_show_timeleft_hud "0"
 
 // Hud color. [R G B A] Pick Colors https://rgbacolorpicker.com/
@@ -162,10 +179,11 @@ gm_hud_yaxis "0.35"
 
 
 
-//|||||||||||||||||||| RESTART LAST PLAYER DISCONNECT FEATURE ||||||||||||||||||||||||
+
+//========== RESTART LAST PLAYER DISCONNECT FEATURE ==========
 // .::[Restart Server When Last Player Disconnect Feature]::. || 1= Yes || 0= No 
 gm_restart_empty_enable "0"
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//==================================================
 
 // When server is empty Which Method Do You Like (Need To Enable gm_restart_empty_enable) || 1= Restart || 2= Crash If Method 1 Is Not work
 gm_restart_empty_method "2"
@@ -175,10 +193,11 @@ gm_restart_empty_delay "900.0"
 
 
 
-//|||||||||||||||||||||||||||||||||||||||||| MAP ROTATION FEATURE |||||||||||||||||||||||||||||||||||||||||
+
+//================ MAP ROTATION FEATURE =================
 // .::[Map Rotation Feature]::.  || 1= Yes || 0= No
 gm_rotation_enable "0"
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//==================================================
 
 // (Need To Enable gm_rotation_enable) 
 //  1= Use game_manager_maps.txt map list need to (Create New Line [gamemanager] + path In Sourcemod/configs/maplists.cfg) 
@@ -206,6 +225,25 @@ gm_rotation_config_to_exec ""
 
 ## .:[ Change Log ]:.
 ```
+(1.1.0)
+-Fix Bug
+-Fix [gm_block_teammateattack_message] added more to array
+-Fix [gm_block_hidemoney_message] added more to array
+-Fix [gm_block_cheats] better and safe way
+-Fix [gm_block_radio_voice_grenades] added female 
+-Fix [gm_block_death_sound] added female 
+-Fix [gm_block_falldamage] Added Disable Fall damage sound
+-Added [gm_show_timeleft_hud] togglable by client side
+-Added [gm_block_chicken_message] remove 'Your Chicken Has Been Killed' Messages blocker
+-Added [gm_block_hsdeath_sound] Sound after death headshot blocker
+-Added [gm_block_deadbody] Remove Dead Body
+-Added [gm_block_time_deadbody] for gm_block_deadbody delay
+-Added ToggleOnTimeLeft/ToggleOffTimeLeft in Game_Manager.phrases.txt
+-Change [gm_block_hurtshield_sound] To [gm_block_hsdamage_sound] Fix Hs Sound
+-Change and fix [gm_block_knife_sound] to [gm_block_zero_knife_sound] remove knife sound if 0 damage 
+-Toggle timeleft Hud [!timeleft/!showtimeleft/!showtime] or [timeleft/showtimeleft/showtime]
+-Remove [gm_block_hurthealth_sound]
+
 (1.0.9)
 -Fix Bug
 -Fix gm_block_radio_voice_grenades Incgrenade CT No Sound
