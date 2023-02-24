@@ -272,7 +272,7 @@ public Plugin myinfo =
 	name = "[CS:GO] Game Manager",
 	author = "Gold KingZ",
 	description = "Game Manager ( Hide radar, money, messages, ping, and more )",
-	version     = "1.1.0",
+	version     = "1.1.0 Fix",
 	url = "https://github.com/oqyh"
 }
 
@@ -1050,24 +1050,26 @@ public void OnMapEnd() {
 
 public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	
 	if( g_benable )
 	{
 		if( g_bkillfeed )
 		{
 			event.BroadcastDisabled = true;
-		}else if( !g_bkillfeed )
-		{
-			event.BroadcastDisabled = false;
 		}
 		
 		if(g_bblockdeadbody)
 		{
+			int client = GetClientOfUserId(GetEventInt(event, "userid"));
 			if(IsClientValid(client))
 			{
 				CreateTimer(GetConVarFloat(g_timedeadbody), killbody, client);
 			}
+		}
+		
+	} else {
+		if( !g_bkillfeed )
+		{
+			event.BroadcastDisabled = false;
 		}
 	}
 	
