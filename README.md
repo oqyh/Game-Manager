@@ -1,4 +1,4 @@
-# [CSGO] Game-Manager (1.1.0)
+# [CSGO] Game-Manager (1.1.0 Fix)
 https://forums.alliedmods.net/showthread.php?t=336242
 
 ### Game Manager ( Block Radio , Radio Start Round , Hide Radar , Money , Messages , Blood , Ping , Map Rotaion With Maplist , Restart Server Last Player Disconnect , And More )
@@ -225,6 +225,10 @@ gm_rotation_config_to_exec ""
 
 ## .:[ Change Log ]:.
 ```
+(1.1.0 Fix)
+-Fix Bug
+-Fix Dublicate modify kill feeds ( Thanks Wiclle For Report )
+
 (1.1.0)
 -Fix Bug
 -Fix [gm_block_teammateattack_message] added more to array
