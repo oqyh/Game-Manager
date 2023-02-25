@@ -1079,19 +1079,24 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 public Action killbody(Handle timer, any client)
 {
 	if (!g_benable || !g_bblockdeadbody)return Plugin_Continue;
+
+	if (client == 0 || !IsValidEdict(client) || !IsValidEntity(client))return Plugin_Continue;
 	
 	int ragdoll = GetEntPropEnt(client, Prop_Send, "m_hRagdoll");
-
+	
 	if (ragdoll<0)
 	{
 		return Plugin_Continue;
 	}
 	
-	if(IsClientValid(client))
+	if(IsValidEntity(client))
 	{
-		if (ragdoll && IsValidEntity(ragdoll))
+		if(IsClientValid(client))
 		{
-			AcceptEntityInput(ragdoll, "kill");
+			if (ragdoll && IsValidEntity(ragdoll))
+			{
+				AcceptEntityInput(ragdoll, "kill");
+			}
 		}
 	}
 	return Plugin_Continue;
@@ -1852,12 +1857,12 @@ public Action Call_Back_Sounds(int clients[MAXPLAYERS], int& numClients, char sa
 		return Plugin_Changed;
 	}
 
-	int ownerknife = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-	
 	if(IsValidEntity(entity))
 	{
 		if (StrContains(classname, "knife") != -1)
 		{
+			int ownerknife = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
+			
 			if (!g_benable || !g_bknifesound || !IsValidClient(ownerknife, false) || entity == 0 || !IsValidEdict(entity) || !IsValidEntity(entity))
 				return Plugin_Continue;
 
